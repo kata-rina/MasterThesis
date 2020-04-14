@@ -91,6 +91,11 @@
 #define SECURITY_FSSW_S1        (SECURITY_MOD3 + 0x20)
 #define SECURITY_APB            (SECURITY_MOD3 + 0x28)
 
+
+#define SCU_CTRL_BASE            0xF8F00000
+#define SAC_REG                  (SCU_CTRL_BASE + 0x00000050)
+#define NSAC_REG                 (SCU_CTRL_BASE + 0x00000054)
+
 /**
  * TrustZone-specific initializations
  *

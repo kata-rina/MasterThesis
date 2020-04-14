@@ -70,7 +70,8 @@ uint32_t board_init(void){
 	write32( (void *)TZ_OCM_RAM0, 0xffffffff);
 	write32( (void *)TZ_OCM_RAM1, 0xffffffff);
 	write32( (void *)TZ_OCM, 0xffffffff);
-	/* Handling DDR memory security (first 14segments NS)l */
+	/* Handling DDR memory security (first 7 segments NS = 7*64MB = 448MB)
+		(last memory segment  is configured as Secure)*/
 	write32( (void *)TZ_DDR_RAM, 0x0000007f);
 	printk("      * Memory security - OK  \n\t");
 
@@ -82,23 +83,26 @@ uint32_t board_init(void){
 	/* QSPI slave security (NS) */
 	write32( (void *)SECURITY4_QSPI, 0x1);
 	/* APB slave security (NS) */
-	// write32( (void *) SECURITY6_APBSL, 0x00007fff);
 	write32( (void *) SECURITY6_APBSL, 0x00007dff);
 	/* DMA slave security (S) */
 	write32( (void *)TZ_DMA_NS, 0x0);
 	write32( (void *)TZ_DMA_IRQ_NS, 0x0);
+
 	/* Ethernet security */
 	write32( (void *)TZ_GEM, 0x3);
 	gem_val = 0x00500801;
-	// gem_val = tmp;
-	// gem_val &= 0xfc0fc0ff;
-	// gem_val |= DIV1 << 20;
-	// gem_val |= DIV0 << 8;
 	write32( (void *)SLCR_GEM0_CLK_CTRL_ADDR, gem_val);
 	write32( (void *)SLCR_GEM0_RCLK_CTRL_ADDR, 0x00000001);
+
 	/* FPGA AFI AXI ports TrustZone */
 	write32( (void *)SECURITY_APB, 0x3F);
 	/* Handling more devices ... */
+
+	/* SCU access control register, contains global timer */
+	write32 ( (void *)SAC_REG, 0xf);
+	/* Non-secure access control register, contains global timer */
+	write32( (void *)NSAC_REG, 0xfff);
+
 	printk("      * Devices security - OK  \n\t");
 
 	/** Locking SLCR register */
