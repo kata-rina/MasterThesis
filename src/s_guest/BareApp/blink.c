@@ -50,6 +50,9 @@
 #include "types.h"
 #include <board.h>
 
+
+
+#define XPSS_SYS_CTRL_BASEADDR    0xF8000000
 // extern uint32_t GPOS0_start;
 extern struct nsguest_conf_entry nsguest_config;
 
@@ -61,18 +64,19 @@ void test(void);
 int main() {
     // int32_t last_read = sensor_data;
     volatile int32_t *sensor_data = (volatile uint32_t *)(0x100000+0x61A80);
-    int32_t read;
-    int i = 0;
 
-    printk("Secure guest running, address %x\n", sensor_data );
+    volatile uint32_t *reg1 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x910);
+    volatile uint32_t *reg2 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x240);
+    volatile uint32_t *reg3 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x430);
+    volatile uint32_t *reg4 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x61c);
+    volatile uint32_t *reg5 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x600);
+
+
+    printk("Secure guest running\n");
     /** Initialize hardware */
     hw_init();
 
     /** Generate tick every 1s */
-
-    static uint32_t toggle;
-    /** 4GPIO (LED) in FPGA fabric */
-    static uint32_t *ptr = (uint32_t *) 0x41200000;
 
     tick_set(1000000); // ps is 11
 
@@ -89,18 +93,14 @@ int main() {
     SPI_1_Config();
 
     // enable the controller
-    SPI_1_Enable();
-    uint8_t a = 0xbc;
-    uint8_t msb;
-    uint32_t temp = 0;
-    uint8_t lsb = 0;
+    // SPI_1_Enable();
+
+    YIELD();
 
     while(1){
-      i++;
-      SPI1_SendData(a);
-      SPI1_ReadData(&lsb);
-      printk("lsb : %x\n", lsb);
 
+      // SPI1_SendData(a);
+      // SPI1_ReadData(&lsb);
       //
       // SPI1_SendData(a);
       // SPI1_ReadData(&msb);
@@ -115,41 +115,17 @@ int main() {
       // {
       // read = i++;
       // memcpy(&read, sensor_data, sizeof(read));
-      if(temp || !temp)
-      {
-        memcpy(sensor_data, &lsb, sizeof(lsb));
-        __asm("dsb");
-        printk("value %d\n", *sensor_data);
-      }
+      // if(temp || !temp)
+      // {
+      //   memcpy(sensor_data, &lsb, sizeof(lsb));
+      //   __asm("dsb");
+      //   printk("value %d\n", *sensor_data);
+      // }
         // *sensor_data = i++;
       // }
       // test();
       YIELD();
+      printk("Secure world!\n");
     }
-
-}
-
-
-void test(void) {
-
-  uint8_t a = 0xbc;
-  uint8_t recv;
-  int i;
-
-  // uart_flag = 1;
-  // uart_putc(0,a);
-  // printk("%c",a );
-
-  // while(!  SPI1_ReadData(&recv));
-  // recv = (uint8_t)uart_getc(0);
-
-  // printk("%s\n", recv );
-
-  SPI1_SendData(a);
-  SPI1_ReadData(&recv);
-
-  // printk("primio : %c\n", recv);
-
-  YIELD();
 
 }

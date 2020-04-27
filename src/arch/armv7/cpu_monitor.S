@@ -11,28 +11,28 @@
  *
  * LTZVisor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation, with a special   
+ * as published by the Free Software Foundation, with a special
  * exception described below.
- * 
- * Linking this code statically or dynamically with other modules 
- * is making a combined work based on this code. Thus, the terms 
- * and conditions of the GNU General Public License V2 cover the 
+ *
+ * Linking this code statically or dynamically with other modules
+ * is making a combined work based on this code. Thus, the terms
+ * and conditions of the GNU General Public License V2 cover the
  * whole combination.
  *
- * As a special exception, the copyright holders of LTZVisor give  
- * you permission to link LTZVisor with independent modules to  
- * produce a statically linked executable, regardless of the license 
- * terms of these independent modules, and to copy and distribute  
- * the resulting executable under terms of your choice, provided that 
- * you also meet, for each linked independent module, the terms and 
- * conditions of the license of that module. An independent module  
+ * As a special exception, the copyright holders of LTZVisor give
+ * you permission to link LTZVisor with independent modules to
+ * produce a statically linked executable, regardless of the license
+ * terms of these independent modules, and to copy and distribute
+ * the resulting executable under terms of your choice, provided that
+ * you also meet, for each linked independent module, the terms and
+ * conditions of the license of that module. An independent module
  * is a module which is not derived from or based on LTZVisor.
  *
  * LTZVisor is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -41,7 +41,7 @@
  * [cpu_monitor.S]
  *
  * This file contains the Monitor implementation.
- * 
+ *
  * (#) $id: cpu_monitor.S 03-05-2015 s_pinto & j_pereira $
  * (#) $id: cpu_monitor.S 18-09-2017 s_pinto (modified) $
 */
@@ -55,13 +55,13 @@
  *
  * @param
  *
- * @retval 
+ * @retval
  */
 .macro SCR_NS_SET
-	push 	{r0}			
+	push 	{r0}
 	mrc     p15, 0, r0, c1, c1, 0	@ Read SCR
 	orr	r0, r0, #SCR_NS_BIT	@ Enable NS bit
-	orr	r0, r0, #SCR_FIQ_BIT	@ Enable the route of FIQ in Monitor 
+	orr	r0, r0, #SCR_FIQ_BIT	@ Enable the route of FIQ in Monitor
 	bic	r0, r0, #SCR_IRQ_BIT
 	mcr     p15, 0, r0, c1, c1, 0	@ Write SCR
 	pop 	{r0}
@@ -72,16 +72,16 @@
  *
  * @param
  *
- * @retval 
+ * @retval
  */
 .macro SCR_NS_CLEAR
-	push 	{r0}			
+	push 	{r0}
 	mrc     p15, 0, r0, c1, c1, 0	@ Read SCR
 	bic	r0, r0, #SCR_NS_BIT	@ Disable the NS bit
 	bic	r0, r0, #SCR_FIQ_BIT	@ Disable the route of FIQs in Monitor
 	orr	r0, r0, #SCR_IRQ_BIT
 	mcr     p15, 0, r0, c1, c1, 0	@ Write SCR
-	pop 	{r0}			
+	pop 	{r0}
 .endm
 
 /**
@@ -89,7 +89,7 @@
  *
  * @param
  *
- * @retval	NS_guest context pointer 
+ * @retval	NS_guest context pointer
  */
 .macro GET_NS_WORLD_CONTEXT
 	mrc p15, 0, r0, c13, c0, 4		@ Read PL1 only thread ID reg
@@ -101,7 +101,7 @@
  *
  * @param	r0 = world context pointer
  *
- * @retval	 
+ * @retval
  */
 .macro WORLD_CONTEXT_SAVE
 	mov	r4, r0
@@ -142,7 +142,7 @@
  *
  * @param	r0 = world context pointer
  *
- * @retval	 
+ * @retval
  */
 .macro WORLD_CONTEXT_RESTORE
 	mov	r4, r0
@@ -181,7 +181,7 @@
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .macro exception_return_arg
 	ldmfd	sp!, {r1}
@@ -198,7 +198,7 @@
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .macro call_c_function_arg func_name
 	stmfd   sp!, {r1-r12, lr}
@@ -209,11 +209,11 @@
 
 
 /**
- * Monitor vector table 
+ * Monitor vector table
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .align 8
 .global _monitor_vector_table
@@ -245,7 +245,7 @@ __mon_fiq_handler:
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .globl _mon_smc_handler
 	/** Monitor - SMC handler */
@@ -261,13 +261,13 @@ _mon_smc_handler:
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .globl _mon_fiq_handler
 	/** Monitor - FIQ handler */
 _mon_fiq_handler:
 	sub	lr, lr, #4			@ Adjust LR
-	push	{r4, lr} 
+	push	{r4, lr}
 	push	{r0 - r3}
 	/* ACK FIQ */
 	mrc 	p15,4,r0,c15,c0,0		@ Read Periph Base Addr
@@ -281,11 +281,11 @@ _mon_fiq_handler:
 	GET_NS_WORLD_CONTEXT
 	WORLD_CONTEXT_SAVE
 	/* Handling FIQ */
-	ldr 	r2,=interrupt		
-	ldr 	r0,[r2]			
+	ldr 	r2,=interrupt
+	ldr 	r0,[r2]
 	//bl 	ttc_interrupt_clear		/* FIXME - supposing always ttc_isr */
 	bl 	fiq_handler			/* FIXME - supposing always ttc_isr */
-	ldr 	r2,=interrupt		
+	ldr 	r2,=interrupt
 	ldr 	r0,[r2]
 	ldr 	r1,=0x00
 	bl 	interrupt_clear
@@ -299,7 +299,7 @@ _mon_fiq_handler:
 	add 	r0,r0,#(6*4)			@ Update stack pointer
 	/* Get back to MON */
 	cps 	#MONITOR_MODE
-	mov 	sp,r0	
+	mov 	sp,r0
 	/* Go S world */
 	pop 	{r0-r1}
 	msr 	spsr,r0
@@ -309,11 +309,11 @@ _mon_fiq_handler:
 	movs	pc,lr				@ Return from exception (MON -> S_SVC)
 
 /**
- * 
+ *
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 board_smc:
 	call_c_function_arg board_handler
@@ -324,14 +324,14 @@ board_smc:
  *
  * @param
  *
- * @retval	 
+ * @retval
  */
 .globl _mon_scheduler
 _mon_scheduler:
 	stmfd 	sp,{r0-r14}^			@ Push SYS regs to monitor stack
 	sub 	sp, sp, #(15*4)      		@ Point stack to the top
 	mrs 	r0,spsr				@ Read the SPSR
-	stmfd	sp, {r0,lr}			@ Push SPSR_mon & lr_mon 
+	stmfd	sp, {r0,lr}			@ Push SPSR_mon & lr_mon
 	sub 	sp, sp, #(2*4)      		@ Update stack pointer
 	/* Save FIQ state */
 	mov	r0, sp				@ Save pointer to monitor stack
@@ -343,13 +343,12 @@ _mon_scheduler:
 	sub 	r0, r0, #(2*4)      		@ Update stack pointer
 	/* Get back to MON */
 	cps #MONITOR_MODE
-	mov 	sp, r0      		
+	mov 	sp, r0
 	/* Restore NS context */
-	GET_NS_WORLD_CONTEXT		
-	WORLD_CONTEXT_RESTORE		
+	GET_NS_WORLD_CONTEXT
+	WORLD_CONTEXT_RESTORE
 	/* Set NS bit and go NS world */
 	SCR_NS_SET
 	isb
-	dsb	
+	dsb
 	movs    pc, lr				@ Return from exception (MON -> NS_SVC)
-

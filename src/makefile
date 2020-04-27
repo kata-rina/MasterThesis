@@ -114,7 +114,7 @@ include $(cpu-platform-mks)
 include $(cpu-object-mks)
 include $(lib-object-mks)
 include $(core-object-mks)
-include $(drivers-common-object-mks) 
+include $(drivers-common-object-mks)
 include $(boards-object-mks)
 include $(ns_guest-object-mks)
 include $(s_guest-object-mks)
@@ -195,7 +195,7 @@ endif
 ifeq ($(CONFIG_NEON_SUPPORT), y)
 	cflags+= -mfloat-abi=softfp -mfpu=neon
 endif
- 
+
 asflags= -Wall -D__ASSEMBLY__ -fno-common -mno-thumb-interwork -marm
 ifeq ($(DEBUG), y)
 	asflags += -g
@@ -224,7 +224,7 @@ endif
 .PHONY: all
 all: $(CONFIG_FILE) $(OFFSETS_FILE) $(targets-y)
 	echo 'LTZVisor ready!!'
-	
+
 $(bin_dir)/$(PROJECT_NAME).elf: $(final-objs-y) #$(KERNEL)
 	$(V)$(lib_ld) $(ldflags) $(final-objs-y) -o $@
 ifneq ($(DEBUG), y)
@@ -232,7 +232,7 @@ ifneq ($(DEBUG), y)
 endif
 	rm -f $(cpu_arch_dir)/asm-offsets.s;
 	rm -f $(final-objs-y)
-	
+
 $(bin_dir)/$(PROJECT_NAME).bin: $(bin_dir)/$(PROJECT_NAME).elf
 	$(V)$(objcopy) -O binary $< $@
 
@@ -255,12 +255,12 @@ define sed-y
         "/^->/{s:->#\(.*\):/* \1 */:; \
         s:^->\([^ ]*\) [\$$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; \
         s:->::; p;}"
-endef	
+endef
 
 .PHONY: clean
 clean:
 	rm -f $(OFFSETS_FILE)
-	rm -f $(cpu_arch_dir)/asm-offsets.s; 
+	rm -f $(cpu_arch_dir)/asm-offsets.s;
 	rm -f $(final-objs-y)
 	rm -f $(bin)/$(PROJECT_NAME).elf
 	rm -f $(bin)/$(PROJECT_NAME).bin

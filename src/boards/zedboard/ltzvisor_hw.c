@@ -34,6 +34,7 @@
 #include <zynq_spi.h>
 #define SCUTIMER_INTERRUPT		(29)
 #define GEM0_INTERRUPT				54
+#define GLOBAL_TIMER_IRQ			27
 
 /**
  * LTZVisor hardware initialization
@@ -91,6 +92,7 @@ uint32_t ltzvisor_hw_init(void){
 	interrupt_security_config(SCUTIMER_INTERRUPT,Int_NS);
 	interrupt_security_config(GEM0_INTERRUPT,Int_NS);
 	interrupt_security_config(TTC0_TTCx_2_INTERRUPT,Int_S);
+	interrupt_security_config(GLOBAL_TIMER_IRQ, Int_NS);
 	printk("      * GIC security - OK  \n\t");
 
 	/** Initialize Platform-specific */
