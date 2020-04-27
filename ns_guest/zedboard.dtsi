@@ -1,0 +1,229 @@
+/include/ "skeleton.dtsi"
+
+/ {
+	compatible = "xlnx,zynq-7000";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "arm,cortex-a9";
+			device_type = "cpu";
+			reg = <0>;
+			clocks = <&clkc 3>;
+			clock-latency = <1000>;
+			cpu0-supply = <&regulator_vccpint>;
+			operating-points = <
+				/* kHz    uV */
+				666667  1000000
+				333334  1000000
+			>;
+		};
+	};
+
+  regulator_vccpint: fixedregulator {
+		compatible = "regulator-fixed";
+		regulator-name = "VCCPINT";
+		regulator-min-microvolt = <1000000>;
+		regulator-max-microvolt = <1000000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+  amba: amba {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		interrupt-parent = <&intc>;
+		ranges;
+
+    intc: interrupt-controller@f8f01000 {
+			compatible = "arm,cortex-a9-gic";
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			reg = <0xF8F01000 0x1000>,
+			      <0xF8F00100 0x100>;
+		};
+
+		L2: cache-controller@f8f02000 {
+			compatible = "arm,pl310-cache";
+			reg = <0xF8F02000 0x1000>;
+			interrupts = <0 2 4>;
+			interrupt-parent = <&intc>;
+			arm,data-latency = <3 2 2>;
+			arm,tag-latency = <2 2 2>;
+			cache-unified;
+			cache-level = <2>;
+		};
+
+		mc: memory-controller@f8006000 {
+			compatible = "xlnx,zynq-ddrc-a05";
+			reg = <0xf8006000 0x1000>;
+		};
+
+		ocmc: ocmc@f800c000 {
+			compatible = "xlnx,zynq-ocmc-1.0";
+			interrupt-parent = <&intc>;
+			interrupts = <0 3 4>;
+			reg = <0xf800c000 0x1000>;
+		};
+
+    uart1: serial@e0001000 {
+      compatible = "xlnx,xuartps", "cdns,uart-r1p8";
+      status = "disabled";
+      clocks = <&clkc 24>, <&clkc 41>;
+      clock-names = "uart_clk", "pclk";
+      reg = <0xE0001000 0x1000>;
+      interrupts = <0 50 4>;
+    };
+
+    qspi: spi@e000d000 {
+			clock-names = "ref_clk", "pclk";
+			clocks = <&clkc 10>, <&clkc 43>;
+			compatible = "xlnx,zynq-qspi-1.0";
+			status = "disabled";
+			interrupt-parent = <&intc>;
+			interrupts = <0 19 4>;
+			reg = <0xe000d000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+    smcc: memory-controller@e000e000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			status = "disabled";
+			clock-names = "memclk", "aclk";
+			clocks = <&clkc 11>, <&clkc 44>;
+			compatible = "arm,pl353-smc-r2p1";
+			interrupt-parent = <&intc>;
+			interrupts = <0 18 4>;
+			ranges ;
+			reg = <0xe000e000 0x1000>;
+			nand0: flash@e1000000 {
+				status = "disabled";
+				compatible = "arm,pl353-nand-r2p1";
+				reg = <0xe1000000 0x1000000>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+			};
+			nor0: flash@e2000000 {
+				status = "disabled";
+				compatible = "cfi-flash";
+				reg = <0xe2000000 0x2000000>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+			};
+		};
+
+		gem0: ethernet@e000b000 {
+			compatible = "cdns,gem";
+			reg = <0xe000b000 0x1000>;
+			status = "disabled";
+			interrupts = <0 22 4>;
+			clocks = <&clkc 30>, <&clkc 30>, <&clkc 13>;
+			clock-names = "pclk", "hclk", "tx_clk";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		gem1: ethernet@e000c000 {
+			compatible = "cdns,gem";
+			reg = <0xe000c000 0x1000>;
+			status = "disabled";
+			interrupts = <0 45 4>;
+			clocks = <&clkc 31>, <&clkc 31>, <&clkc 14>;
+			clock-names = "pclk", "hclk", "tx_clk";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+    sdhci0: sdhci@e0100000 {
+      compatible = "arasan,sdhci-8.9a";
+      status = "disabled";
+      clock-names = "clk_xin", "clk_ahb";
+      clocks = <&clkc 21>, <&clkc 32>;
+      interrupt-parent = <&intc>;
+      interrupts = <0 24 4>;
+      reg = <0xe0100000 0x1000>;
+    };
+
+    sdhci1: sdhci@e0101000 {
+      compatible = "arasan,sdhci-8.9a";
+      status = "disabled";
+      clock-names = "clk_xin", "clk_ahb";
+      clocks = <&clkc 22>, <&clkc 33>;
+      interrupt-parent = <&intc>;
+      interrupts = <0 47 4>;
+      reg = <0xe0101000 0x1000>;
+    };
+
+    slcr: slcr@f8000000 {
+      #address-cells = <1>;
+      #size-cells = <1>;
+      compatible = "xlnx,zynq-slcr", "syscon", "simple-bus";
+      reg = <0xF8000000 0x1000>;
+      ranges;
+      clkc: clkc@100 {
+        #clock-cells = <1>;
+        compatible = "xlnx,ps7-clkc";
+        fclk-enable = <0xf>;
+        clock-output-names = "armpll", "ddrpll", "iopll", "cpu_6or4x",
+            "cpu_3or2x", "cpu_2x", "cpu_1x", "ddr2x", "ddr3x",
+            "dci", "lqspi", "smc", "pcap", "gem0", "gem1",
+            "fclk0", "fclk1", "fclk2", "fclk3", "can0", "can1",
+            "sdio0", "sdio1", "uart0", "uart1", "spi0", "spi1",
+            "dma", "usb0_aper", "usb1_aper", "gem0_aper",
+            "gem1_aper", "sdio0_aper", "sdio1_aper",
+            "spi0_aper", "spi1_aper", "can0_aper", "can1_aper",
+            "i2c0_aper", "i2c1_aper", "uart0_aper", "uart1_aper",
+            "gpio_aper", "lqspi_aper", "smc_aper", "swdt",
+            "dbg_trc", "dbg_apb";
+        reg = <0x100 0x100>;
+      };
+
+      pinctrl0: pinctrl@700 {
+        compatible = "xlnx,pinctrl-zynq";
+        reg = <0x700 0x200>;
+        syscon = <&slcr>;
+      };
+    };
+
+    global_timer: timer@f8f00200 {
+			compatible = "arm,cortex-a9-global-timer";
+			reg = <0xf8f00200 0x20>;
+			interrupts = <1 11 0x301>;
+			interrupt-parent = <&intc>;
+			clocks = <&clkc 4>;
+		};
+
+    ttc1: timer@f8002000 {
+      interrupt-parent = <&intc>;
+      interrupts = <0 37 4>, <0 38 4>, <0 39 4>;
+      compatible = "cdns,ttc";
+      clocks = <&clkc 6>;
+      reg = <0xF8002000 0x1000>;
+    };
+
+    scutimer: timer@f8f00600 {
+      interrupt-parent = <&intc>;
+      interrupts = <1 13 0x301>;
+      compatible = "arm,cortex-a9-twd-timer";
+      reg = <0xf8f00600 0x20>;
+      clocks = <&clkc 4>;
+    };
+
+    usb0: usb@e0002000 {
+			compatible = "xlnx,zynq-usb-2.20a", "chipidea,usb2";
+			status = "disabled";
+			clocks = <&clkc 28>;
+			interrupt-parent = <&intc>;
+			interrupts = <0 21 4>;
+			reg = <0xe0002000 0x1000>;
+			phy_type = "ulpi";
+		};
+
+  };
+
+};
