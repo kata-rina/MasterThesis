@@ -103,6 +103,8 @@ uint32_t board_init(void){
 	/* Non-secure access control register, contains global timer */
 	write32( (void *)NSAC_REG, 0xfff);
 
+	write32( (void *)(0xF8F00040), 0);//FILTER START
+
 	printk("      * Devices security - OK  \n\t");
 
 	/** Locking SLCR register */
@@ -127,6 +129,12 @@ uint32_t board_handler(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg
 		}
 		case (LTZVISOR_WRITE_SYSCALL):{
 			write32( (volatile void*)arg1, arg2);
+			break;
+		}
+		case(LTZVISOR_CP15_WRITE_SYSCALL):{
+			asm volatile("mrc p15, 0, r0, c15, c0, 0\n"
+										"orr r0, r0, #1\n"
+										"mcr p15, 0, r0, c15, c0, 0\n");
 			break;
 		}
 		default:

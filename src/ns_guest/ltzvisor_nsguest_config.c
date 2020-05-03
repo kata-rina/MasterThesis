@@ -59,12 +59,12 @@ struct nsguest_conf_entry nsguest_config[] ={
 		.gce_id = 0,
 		/* No ram disk needed */
 		.gce_trd_init = 0,
-		.gce_trd_load = 0x00800000,
+		// .gce_trd_load = 0x00800000,
 		/* Binary image size */
 		.gce_bin_start = (uint32_t) &GPOS0_start,
 		.gce_bin_end = (uint32_t) &GPOS0_end,
 		/* Load address */
-		.gce_bin_load = 0x00100000,
+		.gce_bin_load = 0x02000000,
 
 	}
 };
