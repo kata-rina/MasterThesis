@@ -59,9 +59,9 @@
  * @retval
  */
 uint32_t board_init(void){
-	volatile uint32_t tmp;
-	uint32_t gem_val;
-	tmp = SLCR_GEM0_CLK_CTRL_ADDR;
+	// volatile uint32_t tmp;
+	// uint32_t gem_val;
+	// tmp = SLCR_GEM0_CLK_CTRL_ADDR;
 
 	/** Unlocking SLCR register */
 	write32( (void *)SLCR_UNLOCK, SLCR_UNLOCK_KEY);
@@ -83,21 +83,23 @@ uint32_t board_init(void){
 	/* QSPI slave security (NS) */
 	write32( (void *)SECURITY4_QSPI, 0x1);
 	/* APB slave security (NS) */
-	write32( (void *) SECURITY6_APBSL, 0x00007dff);
+	write32( (void *) SECURITY6_APBSL, 0x00007fff);
 	/* DMA slave security (S) */
-	write32( (void *)TZ_DMA_NS, 0x0);
-	write32( (void *)TZ_DMA_IRQ_NS, 0x0);
+	write32( (void *)TZ_DMA_NS, 0x1);
+	write32( (void *)TZ_DMA_IRQ_NS, 0x0000ffff);
 
 	/* Ethernet security */
 	write32( (void *)TZ_GEM, 0x3);
-	gem_val = 0x00500801;
-	write32( (void *)SLCR_GEM0_CLK_CTRL_ADDR, gem_val);
-	write32( (void *)SLCR_GEM0_RCLK_CTRL_ADDR, 0x00000001);
+	write32( (void *)SLCR_BASE + 0x61c, 0);
+	write32( (void *)SLCR_BASE + 0x600, 0xC);
 
 	/* FPGA AFI AXI ports TrustZone */
 	write32( (void *)SECURITY_APB, 0x3F);
-	/* Handling more devices ... */
+	write32( (void *)TZ_FPGA_M, 0x3);
+	// write32( (void *)SECURITY_FSSW_S0, 0x1);
 
+
+	/* Handling more devices ... */
 	/* SCU access control register, contains global timer */
 	write32 ( (void *)SAC_REG, 0xf);
 	/* Non-secure access control register, contains global timer */

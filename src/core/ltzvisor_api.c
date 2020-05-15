@@ -125,14 +125,12 @@ uint32_t ltzvisor_nsguest_create( struct nsguest_conf_entry *g )
 	/* lr = start_addr & spsr=supervisor */
 	NS_Guest.core.vcpu_regs_core.lr_mon = g->gce_bin_load;
 	NS_Guest.core.vcpu_regs_core.spsr_mon = 0x193;
-	// NS_Guest.core.vcpu_regs_core.spsr_mon = 0x1F;
 	printk("      * NS_Guest core registers - OK  \n\t");
 
 	/** Guest CP15 Registers */
 	/* Clean CP15 registers */
 	memset(&NS_Guest.core.vcpu_regs_cp15,0,sizeof(struct cp15_regs));
 	NS_Guest.core.vcpu_regs_cp15.c1_SCTLR = 0x00c50078;
-	// NS_Guest.core.vcpu_regs_cp15.c1_SCTLR = 0x00c5187B;
 	printk("      * NS_Guest CP15 registers - OK  \n\t");
 
 //	#ifdef CONFIG_CACHE_L2X0

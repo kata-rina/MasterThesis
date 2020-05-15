@@ -67,9 +67,9 @@ void hw_init( void ){
   interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
   interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,5);
 
-  interrupt_enable(SPI_1_INTERRUPT,TRUE);
-  interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
-  interrupt_priority_set(SPI_1_INTERRUPT, 4);
+  // interrupt_enable(SPI_1_INTERRUPT,TRUE);
+  // interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
+  // interrupt_priority_set(SPI_1_INTERRUPT, 4);
 
 }
 

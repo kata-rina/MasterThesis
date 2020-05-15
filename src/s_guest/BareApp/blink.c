@@ -43,89 +43,46 @@
  *
  * (#) $id: blink.c 27-09-2017 s_pinto$
 */
-#include <zynq_spi.h>
-#include <hw_zynq.h>
-#include <printk.h>
-#include <zynq_uart.h>
-#include "types.h"
-#include <board.h>
 
+#include<hw_zynq.h>
+#include<printk.h>
 
-
-#define XPSS_SYS_CTRL_BASEADDR    0xF8000000
-// extern uint32_t GPOS0_start;
-extern struct nsguest_conf_entry nsguest_config;
-
-// #define sensor_data (*(volatile int32_t *)(GPOS0_start + 0x61A80))
-// volatile int32_t sensor_data __attribute__((section (".shared_location")));
-
-void test(void);
+void led_blink( void * pvParameters );
 
 int main() {
-    // int32_t last_read = sensor_data;
-    volatile int32_t *sensor_data = (volatile uint32_t *)(0x100000+0x61A80);
 
-    volatile uint32_t *reg1 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x910);
-    volatile uint32_t *reg2 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x240);
-    volatile uint32_t *reg3 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x430);
-    volatile uint32_t *reg4 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x61c);
-    volatile uint32_t *reg5 = (volatile uint32_t *) (XPSS_SYS_CTRL_BASEADDR + 0x600);
+	/** Initialize hardware */
+	hw_init();
 
+	printk(" * Secure bare metal VM: running ... \n\t");
 
-    printk("Secure guest running\n");
-    /** Initialize hardware */
-    hw_init();
+	/** Generate tick every 1s */
+	tick_set(1000000);
 
-    /** Generate tick every 1s */
+	/* Calling Blinking Task (LED blink at 1s) */
+	led_blink((void*)0);
 
-    tick_set(1000000); // ps is 11
+	/* This point will never be reached */
+	for( ;; );
 
-    // reset controller
-    SPI_1_Reset();
+}
 
-    // enable clock for controller
-    SPI_1_ClockEnable();
+/**
+ * Blink LED "Task"
+ *
+ * @param
+ *
+ * @retval
+ */
+void led_blink( void * parameters ){
 
-    // connect controller with MIO pins
-    SPI_1_SignalRoute();
+	static uint32_t toggle;
+	/** 4GPIO (LED) in FPGA fabric */
+	static uint32_t *ptr = (uint32_t *) 0x41200000;
 
-    // configure the SPI controller (clocks, registers etc..)
-    SPI_1_Config();
-
-    // enable the controller
-    // SPI_1_Enable();
-
-    YIELD();
-
-    while(1){
-
-      // SPI1_SendData(a);
-      // SPI1_ReadData(&lsb);
-      //
-      // SPI1_SendData(a);
-      // SPI1_ReadData(&msb);
-      // printk("msb : %x\n", msb);
-
-
-
-      // temp = ((uint32_t)msb << 8) | (uint32_t)lsb;
-      // int f = (temp*100/1023)*3.3;
-      // printk("primio : %d\n", f);
-      // if(last_read != *sensor_data)
-      // {
-      // read = i++;
-      // memcpy(&read, sensor_data, sizeof(read));
-      // if(temp || !temp)
-      // {
-      //   memcpy(sensor_data, &lsb, sizeof(lsb));
-      //   __asm("dsb");
-      //   printk("value %d\n", *sensor_data);
-      // }
-        // *sensor_data = i++;
-      // }
-      // test();
-      YIELD();
-      printk("Secure world!\n");
-    }
-
+	for( ;; ){
+		toggle ^=0xFF;
+		*ptr = toggle;
+		YIELD()
+	}
 }
