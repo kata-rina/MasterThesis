@@ -1,1 +1,1 @@
-s_guest-objs-y = blink.o
+# s_guest-objs-y = blink.o

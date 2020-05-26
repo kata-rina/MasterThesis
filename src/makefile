@@ -172,6 +172,7 @@ ifeq ($(S_GUEST), FREERTOS)
 	cppflags+=-I $(freertos_core_dir)/inc
 	cppflags+=-I $(freertos_portable_gcc_dir)/inc
 	cppflags+=-I $(freertos_portable_mem_dir)/inc
+	cppflags+=-I $(freertos_core_apps_dir)/inc
 endif
 
 
@@ -187,7 +188,9 @@ objcopy=	$(CROSS_COMPILE)objcopy
 nm=			$(CROSS_COMPILE)nm
 size=		$(CROSS_COMPILE)size
 
-cflags= -O0 -Wall -fno-common -msoft-float -mno-thumb-interwork -marm -nostdlib -fno-short-enums -mfloat-abi=softfp
+cflags= -O0 -Wall -fno-common -mno-thumb-interwork -marm -nostdlib -fno-short-enums -mfpu=vfpv3 -mfloat-abi=hard
+
+# cflags= -O0 -Wall -fno-common -msoft-float -mno-thumb-interwork -marm -nostdlib -fno-short-enums -mfloat-abi=softfp -mfpu=vfpv3
 ifeq ($(DEBUG), y)
 	cflags += -g
 endif
@@ -196,7 +199,7 @@ ifeq ($(CONFIG_NEON_SUPPORT), y)
 	cflags+= -mfloat-abi=softfp -mfpu=neon
 endif
 
-asflags= -Wall -D__ASSEMBLY__ -fno-common -mno-thumb-interwork -marm
+asflags= -Wall -D__ASSEMBLY__ -fno-common -mno-thumb-interwork -marm -mfpu=vfpv3 -mfloat-abi=hard
 ifeq ($(DEBUG), y)
 	asflags += -g
 endif

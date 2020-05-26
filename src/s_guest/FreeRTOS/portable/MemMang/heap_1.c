@@ -77,6 +77,8 @@
  */
 #include <stdlib.h>
 
+// #include"heap_1.h"
+
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
 task.h is included from an application file. */
@@ -112,24 +114,34 @@ void *pvPortMalloc( size_t xWantedSize )
 {
 void *pvReturn = NULL;
 static uint8_t *pucAlignedHeap = NULL;
+static uint32_t *ptr = (uint32_t *) 0x41200000;
 
 	/* Ensure that blocks are always aligned to the required number of bytes. */
 	#if( portBYTE_ALIGNMENT != 1 )
 	{
 		if( xWantedSize & portBYTE_ALIGNMENT_MASK )
 		{
+			*ptr = 0x06;
 			/* Byte alignment required. */
 			xWantedSize += ( portBYTE_ALIGNMENT - ( xWantedSize & portBYTE_ALIGNMENT_MASK ) );
 		}
 	}
 	#endif
 
+	*ptr = 0x07;
+
 	vTaskSuspendAll();
+	*ptr = 0x08;
+
 	{
 		if( pucAlignedHeap == NULL )
 		{
+			*ptr = 0x09;
+
 			/* Ensure the heap starts on a correctly aligned boundary. */
 			pucAlignedHeap = ( uint8_t * ) ( ( ( portPOINTER_SIZE_TYPE ) &ucHeap[ portBYTE_ALIGNMENT ] ) & ( ~( ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) ) );
+			*ptr = 0x0A;
+
 		}
 
 		/* Check there is enough room left for the allocation. */
@@ -140,9 +152,14 @@ static uint8_t *pucAlignedHeap = NULL;
 			block. */
 			pvReturn = pucAlignedHeap + xNextFreeByte;
 			xNextFreeByte += xWantedSize;
+			*ptr = 0x0B;
+
 		}
+		*ptr = 0x0C;
 
 		traceMALLOC( pvReturn, xWantedSize );
+		*ptr = 0x0D;
+
 	}
 	( void ) xTaskResumeAll();
 
@@ -183,6 +200,3 @@ size_t xPortGetFreeHeapSize( void )
 {
 	return ( configADJUSTED_HEAP_SIZE - xNextFreeByte );
 }
-
-
-
