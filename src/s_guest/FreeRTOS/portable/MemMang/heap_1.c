@@ -114,33 +114,27 @@ void *pvPortMalloc( size_t xWantedSize )
 {
 void *pvReturn = NULL;
 static uint8_t *pucAlignedHeap = NULL;
-static uint32_t *ptr = (uint32_t *) 0x41200000;
 
 	/* Ensure that blocks are always aligned to the required number of bytes. */
 	#if( portBYTE_ALIGNMENT != 1 )
 	{
 		if( xWantedSize & portBYTE_ALIGNMENT_MASK )
 		{
-			*ptr = 0x06;
 			/* Byte alignment required. */
 			xWantedSize += ( portBYTE_ALIGNMENT - ( xWantedSize & portBYTE_ALIGNMENT_MASK ) );
 		}
 	}
 	#endif
 
-	*ptr = 0x07;
 
 	vTaskSuspendAll();
-	*ptr = 0x08;
 
 	{
 		if( pucAlignedHeap == NULL )
 		{
-			*ptr = 0x09;
 
 			/* Ensure the heap starts on a correctly aligned boundary. */
 			pucAlignedHeap = ( uint8_t * ) ( ( ( portPOINTER_SIZE_TYPE ) &ucHeap[ portBYTE_ALIGNMENT ] ) & ( ~( ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) ) );
-			*ptr = 0x0A;
 
 		}
 
@@ -152,13 +146,9 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 			block. */
 			pvReturn = pucAlignedHeap + xNextFreeByte;
 			xNextFreeByte += xWantedSize;
-			*ptr = 0x0B;
-
 		}
-		*ptr = 0x0C;
 
 		traceMALLOC( pvReturn, xWantedSize );
-		*ptr = 0x0D;
 
 	}
 	( void ) xTaskResumeAll();

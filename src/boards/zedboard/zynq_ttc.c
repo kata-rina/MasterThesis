@@ -11,28 +11,28 @@
  *
  * LTZVisor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation, with a special   
+ * as published by the Free Software Foundation, with a special
  * exception described below.
- * 
- * Linking this code statically or dynamically with other modules 
- * is making a combined work based on this code. Thus, the terms 
- * and conditions of the GNU General Public License V2 cover the 
+ *
+ * Linking this code statically or dynamically with other modules
+ * is making a combined work based on this code. Thus, the terms
+ * and conditions of the GNU General Public License V2 cover the
  * whole combination.
  *
- * As a special exception, the copyright holders of LTZVisor give  
- * you permission to link LTZVisor with independent modules to  
- * produce a statically linked executable, regardless of the license 
- * terms of these independent modules, and to copy and distribute  
- * the resulting executable under terms of your choice, provided that 
- * you also meet, for each linked independent module, the terms and 
- * conditions of the license of that module. An independent module  
+ * As a special exception, the copyright holders of LTZVisor give
+ * you permission to link LTZVisor with independent modules to
+ * produce a statically linked executable, regardless of the license
+ * terms of these independent modules, and to copy and distribute
+ * the resulting executable under terms of your choice, provided that
+ * you also meet, for each linked independent module, the terms and
+ * conditions of the license of that module. An independent module
  * is a module which is not derived from or based on LTZVisor.
  *
  * LTZVisor is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
@@ -41,13 +41,14 @@
  * [zynq_ttc.c]
  *
  * This file contains the Zynq Triple Timer Counter driver.
- * 
+ *
  * (#) $id: zynq_ttc.c 20-05-2015 s_pinto$
  * (#) $id: zynq_ttc.c 19-09-2017 s_pinto (modified)$
 */
 
 #include"zynq_ttc.h"
 #include "../zc702/inc/zynq_ttc.h"
+#include "printk.h"
 
 /** */
 Zynq_Ttc * const Ptr_Ttc[NUM_TTC] = {(Zynq_Ttc *)TTC0_BASE, (Zynq_Ttc *)TTC1_BASE};
@@ -58,9 +59,9 @@ Zynq_Ttc * const Ptr_Ttc[NUM_TTC] = {(Zynq_Ttc *)TTC0_BASE, (Zynq_Ttc *)TTC1_BAS
  *
  * @param 	ttc_num = TTC number
  * 		timer_num = TTC's timer number
- * 		mode = timer mode 	
+ * 		mode = timer mode
  *
- * @retval	True for success and FALSE in case ERROR 	
+ * @retval	True for success and FALSE in case ERROR
  */
 uint32_t ttc_init(uint32_t ttc_num, uint32_t timer_num, uint32_t mode){
 
@@ -70,7 +71,7 @@ uint32_t ttc_init(uint32_t ttc_num, uint32_t timer_num, uint32_t mode){
 	/**  Check Arguments  */
 	if( (ttc_num > TTC1) || (timer_num > TTCx_2) || (mode > FREE_RUNNING) ){
 		/* Invalid Argument */
-		return (FALSE); 
+		return (FALSE);
 	}
 
 	ptr_ttc = Ptr_Ttc[ttc_num];
@@ -89,18 +90,18 @@ uint32_t ttc_init(uint32_t ttc_num, uint32_t timer_num, uint32_t mode){
 		case INTERVAL:
 			/* Reset and Set to Interval mode */
 			ptr_ttc->cnt_cntrl[timer_num] = (TTC_RESET_CONFIG) | (TTC_CNT_CNTRL_RST | TTC_CNT_CNTRL_INT | TTC_CNT_CNTRL_DIS);
-			/* Set interval value (default) */ 
-			ptr_ttc->interv_cnt[timer_num] = TTC_INT_VALUE; 
+			/* Set interval value (default) */
+			ptr_ttc->interv_cnt[timer_num] = TTC_INT_VALUE;
 			/* Set interval interrupt */
-			ptr_ttc->interrupt_en[timer_num] = TTC_INT_EN_INTERVAL; 
+			ptr_ttc->interrupt_en[timer_num] = TTC_INT_EN_INTERVAL;
 			break;
 		case MATCH:
 			/* Reset and Set to Match mode */
 			ptr_ttc->cnt_cntrl[timer_num] = (TTC_CNT_CNTRL_RST | TTC_CNT_CNTRL_MATCH | TTC_CNT_CNTRL_DIS);
 			/* Set match1 value (default) */
 			ptr_ttc->match1_cnt[timer_num] = TTC_MATCH1_VALUE;
-			/* Set match1 interrupt */ 
-			ptr_ttc->interrupt_en[timer_num] = TTC_INT_EN_MATCH1; 
+			/* Set match1 interrupt */
+			ptr_ttc->interrupt_en[timer_num] = TTC_INT_EN_MATCH1;
 			break;
 		case FREE_RUNNING:
 			/* Nothing to do */
@@ -116,7 +117,7 @@ uint32_t ttc_init(uint32_t ttc_num, uint32_t timer_num, uint32_t mode){
  * @param 	ttc_num = TTC number
  * 		timer_num = TTC's timer number
  *
- * @retval	True for success and FALSE in case ERROR 	
+ * @retval	True for success and FALSE in case ERROR
  */
 uint32_t ttc_enable(uint32_t ttc_num, uint32_t timer_num){
 
@@ -126,16 +127,16 @@ uint32_t ttc_enable(uint32_t ttc_num, uint32_t timer_num){
 	/**  Check Arguments  */
 	if( (ttc_num > TTC1) || (timer_num > TTCx_2)){
 		/* Invalid Argument */
-		return (FALSE); 
+		return (FALSE);
 	}
 
 	ptr_ttc = Ptr_Ttc[ttc_num];
 
-	cnt_cntrl = ptr_ttc->cnt_cntrl[timer_num]; 
+	cnt_cntrl = ptr_ttc->cnt_cntrl[timer_num];
 	/* Reset counter value and restarts counting */
 	cnt_cntrl |= TTC_CNT_CNTRL_RST;
-	/* Enable Timer */ 
-	cnt_cntrl &= ~TTC_CNT_CNTRL_DIS; 
+	/* Enable Timer */
+	cnt_cntrl &= ~TTC_CNT_CNTRL_DIS;
 	ptr_ttc->cnt_cntrl[timer_num] = cnt_cntrl;
 
 	return TRUE;
@@ -147,7 +148,7 @@ uint32_t ttc_enable(uint32_t ttc_num, uint32_t timer_num){
  * @param 	ttc_num = TTC number
  * 		timer_num = TTC's timer number
  *
- * @retval	True for success and FALSE in case ERROR 	
+ * @retval	True for success and FALSE in case ERROR
  */
 uint32_t ttc_disable(uint32_t ttc_num, uint32_t timer_num){
 
@@ -157,14 +158,14 @@ uint32_t ttc_disable(uint32_t ttc_num, uint32_t timer_num){
 	/**  Check Arguments  */
 	if( (ttc_num > TTC1) || (timer_num > TTCx_2)){
 		/* Invalid Argument */
-		return (FALSE); 
+		return (FALSE);
 	}
 
 	ptr_ttc = Ptr_Ttc[ttc_num];
 
 	cnt_cntrl = ptr_ttc->cnt_cntrl[timer_num];
 	/* Disable Timer */
-	cnt_cntrl |= TTC_CNT_CNTRL_DIS; 
+	cnt_cntrl |= TTC_CNT_CNTRL_DIS;
 	ptr_ttc->cnt_cntrl[timer_num] = cnt_cntrl;
 
 	return TRUE;
@@ -175,9 +176,9 @@ uint32_t ttc_disable(uint32_t ttc_num, uint32_t timer_num){
  *
  * @param 	ttc_num = TTC number
  * 		timer_num = TTC's timer number
- *		useconds = time 
+ *		useconds = time
  *
- * @retval	True for success and FALSE in case ERROR 	
+ * @retval	True for success and FALSE in case ERROR
  */
 uint32_t ttc_request(uint32_t ttc_num, uint32_t timer_num, uint32_t useconds){
 
@@ -188,7 +189,7 @@ uint32_t ttc_request(uint32_t ttc_num, uint32_t timer_num, uint32_t useconds){
 	/**  Check Arguments  */
 	if( (ttc_num > TTC1) || (timer_num > TTCx_2)){
 		/* Invalid Argument */
-		return (FALSE); 
+		return (FALSE);
 	}
 
 	ptr_ttc = Ptr_Ttc[ttc_num];
@@ -216,14 +217,14 @@ uint32_t ttc_request(uint32_t ttc_num, uint32_t timer_num, uint32_t useconds){
 
 		useconds = ((useconds * 271) / 10000);
 
-	} 
+	}
 	else{
-		return (FALSE); 
+		return (FALSE);
 	}
 
 	/** Set Time */
 	/* Extract mode */
-	cnt_cntrl &= (TTC_CNT_CNTRL_MATCH | TTC_CNT_CNTRL_INT); 
+	cnt_cntrl &= (TTC_CNT_CNTRL_MATCH | TTC_CNT_CNTRL_INT);
 	/* Interval Mode */
 	if(cnt_cntrl & TTC_CNT_CNTRL_INT){
 		ptr_ttc->interv_cnt[timer_num] = useconds;
@@ -234,7 +235,7 @@ uint32_t ttc_request(uint32_t ttc_num, uint32_t timer_num, uint32_t useconds){
 	}
 	else{
 		/* Not Implemented */
-		return FALSE; 
+		return FALSE;
 	}
 
 	return TRUE;
@@ -246,9 +247,9 @@ uint32_t ttc_request(uint32_t ttc_num, uint32_t timer_num, uint32_t useconds){
 /**
  * TTC interrupt clear
  *
- * @param 	interrupt = interrupt number 
+ * @param 	interrupt = interrupt number
  *
- * @retval	True for success and FALSE in case ERROR 	
+ * @retval	True for success and FALSE in case ERROR
  */
 uint32_t ttc_interrupt_clear(uint32_t interrupt){
 
@@ -256,6 +257,8 @@ uint32_t ttc_interrupt_clear(uint32_t interrupt){
 	uint32_t ttc_num = 0;
 	uint32_t interrupt_reg = 0;
 	uint32_t ttc_tim_num = 0;
+
+	printk("TTC interrupt clear funkcija.\n");
 
 	/** Check which TTC_timer generated the Interrupt */
 	switch (interrupt){

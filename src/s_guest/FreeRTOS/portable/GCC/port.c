@@ -410,7 +410,6 @@ uint32_t ulAPSR;
 	__asm volatile ( "MRS %0, APSR" : "=r" ( ulAPSR ) );
 	ulAPSR &= portAPSR_MODE_BITS_MASK;
 	configASSERT( ulAPSR != portAPSR_USER_MODE );
-
 	if( ulAPSR != portAPSR_USER_MODE )
 	{
 		/* Only continue if the binary point value is set to its lowest possible
@@ -425,7 +424,6 @@ uint32_t ulAPSR;
 			automatically turned back on in the CPU when the first task starts
 			executing. */
 			portCPU_IRQ_DISABLE();
-
 			/* Start the timer that generates the tick ISR. */
 			configSETUP_TICK_INTERRUPT();
 
@@ -433,6 +431,8 @@ uint32_t ulAPSR;
 			vPortRestoreTaskContext();
 		}
 	}
+
+	printk("ovdje ne bismo smjeli biti\n");
 
 	/* Will only get here if vTaskStartScheduler() was called with the CPU in
 	a non-privileged mode or the binary point register was not set to its lowest
@@ -503,6 +503,8 @@ void FreeRTOS_Tick_Handler( void )
 	necessary to turn off interrupts in the CPU itself while the ICCPMR is being
 	updated. */
 	portCPU_IRQ_DISABLE();
+	static uint32_t *ptr = (uint32_t *) 0x41200000;
+	*ptr = 0xff;
 	portICCPMR_PRIORITY_MASK_REGISTER = ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
 	__asm volatile (	"dsb		\n"
 						"isb		\n" );

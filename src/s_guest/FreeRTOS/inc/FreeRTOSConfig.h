@@ -29,6 +29,8 @@
 
 #define configTICK_RATE_HZ (100)
 
+#define configCPU_CLOCK_HZ (666666687)
+
 #define configMAX_PRIORITIES (8)
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
@@ -71,13 +73,13 @@
 #define INCLUDE_eTaskGetState                1
 #define INCLUDE_xTimerPendFunctionCall       1
 #define INCLUDE_pcTaskGetTaskName            1
-#define configMAX_API_CALL_INTERRUPT_PRIORITY (18)
+#define configMAX_API_CALL_INTERRUPT_PRIORITY (10)
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F00000)
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( 0x0100 )
-#define configUNIQUE_INTERRUPT_PRIORITIES                32
+#define configUNIQUE_INTERRUPT_PRIORITIES                16
 
 void vFreeRTOS_SetupTickInterrupt( void );
 void vFreeRTOS_ClearTickInterrupt( void );

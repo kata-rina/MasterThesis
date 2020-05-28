@@ -17,7 +17,6 @@ void main ( void ){
     2,
     NULL);
 
-
   vTaskStartScheduler();
 
 }
