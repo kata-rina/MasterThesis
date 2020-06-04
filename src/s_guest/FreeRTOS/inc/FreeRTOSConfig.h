@@ -27,7 +27,7 @@
 
 #define configUSE_CO_ROUTINES 0
 
-#define configTICK_RATE_HZ (100)
+#define configTICK_RATE_HZ (50)
 
 #define configCPU_CLOCK_HZ (666666687)
 
@@ -35,9 +35,9 @@
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
 
-#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200*2)
+#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200*2*2)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*4*4*2 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*4*4*2*4 ) )
 
 #define configMAX_TASK_NAME_LEN 10
 

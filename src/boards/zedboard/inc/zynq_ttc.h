@@ -192,6 +192,4 @@ uint32_t ttc_interrupt_clear(uint32_t interrupt);
 
 uint32_t read_ttc(uint32_t ttc_num, uint32_t timer_num);
 
-uint32_t ttc_interrupt(uint32_t interrupt);
-
 #endif /* __ZYNQ_TTC_H */

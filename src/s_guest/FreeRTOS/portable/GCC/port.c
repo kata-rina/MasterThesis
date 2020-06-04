@@ -231,6 +231,10 @@ void vApplicationFPUSafeIRQHandler( uint32_t ulICCIAR ) __attribute__((weak) );
 
 /*-----------------------------------------------------------*/
 
+static uint32_t toggle = 0x00;
+/** 4GPIO (LED) in FPGA fabric */
+static uint32_t *ptr = (uint32_t *) 0x41200000;
+
 /* A variable is used to keep track of the critical section nesting.  This
 variable has to be stored as part of the task context and must be initialised to
 a non zero value to ensure interrupts don't inadvertently become unmasked before
@@ -502,9 +506,10 @@ void FreeRTOS_Tick_Handler( void )
 	so there is no need to save and restore the current mask value.  It is
 	necessary to turn off interrupts in the CPU itself while the ICCPMR is being
 	updated. */
+	// toggle ^= 0xFF;
+	printk("U fiq\n");
 	portCPU_IRQ_DISABLE();
-	static uint32_t *ptr = (uint32_t *) 0x41200000;
-	*ptr = 0xff;
+
 	portICCPMR_PRIORITY_MASK_REGISTER = ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
 	__asm volatile (	"dsb		\n"
 						"isb		\n" );
@@ -518,7 +523,9 @@ void FreeRTOS_Tick_Handler( void )
 
 	/* Ensure all interrupt priorities are active again. */
 	portCLEAR_INTERRUPT_MASK();
+
 	configCLEAR_TICK_INTERRUPT();
+
 }
 /*-----------------------------------------------------------*/
 

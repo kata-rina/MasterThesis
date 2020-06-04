@@ -1,4 +1,5 @@
 #include<my_functions.h>
+#include <printk.h>
 /* idle hook function calls hypervisor scheduler
     -> NS guest runs during FreeRTOS idle task */
 // void vApplicationIdleHook( void ) {
@@ -17,14 +18,14 @@
 
 /* some other task to signalize that FreeRTOS is alive */
 void vTask1(void *pvParameters) {
-
-  static uint32_t on=0xFF;
-
-  /** 4GPIO (LED) in FPGA fabric */
-  static uint32_t *ptr = (uint32_t *) 0x41200000;
-
+  uint32_t i = 0;
+  printk("T\n");
   while(1){
-    *ptr = on;
+    i++;
+    if((i%20000) == 0){
+      printk("Task\n");
+    }
+
     // YIELD()
   }
 }
