@@ -53,6 +53,10 @@
 /** */
 Zynq_Ttc * const Ptr_Ttc[NUM_TTC] = {(Zynq_Ttc *)TTC0_BASE, (Zynq_Ttc *)TTC1_BASE};
 
+static uint32_t toggle = 0x00;
+/** 4GPIO (LED) in FPGA fabric */
+static uint32_t *ptr = (uint32_t *) 0x41200000;
+
 
 /**
  * TTC initialization
@@ -258,7 +262,8 @@ uint32_t ttc_interrupt_clear(uint32_t interrupt){
 	uint32_t interrupt_reg = 0;
 	uint32_t ttc_tim_num = 0;
 
-	printk("TTC interrupt clear funkcija.\n");
+	toggle ^= 0xFF;
+	*ptr = toggle;
 
 	/** Check which TTC_timer generated the Interrupt */
 	switch (interrupt){
@@ -310,4 +315,22 @@ uint32_t read_ttc(uint32_t ttc_num, uint32_t timer_num){
     ptr_ttc = Ptr_Ttc[ttc_num];
     uint32_t ttc_cnt = ptr_ttc->cnt_value[timer_num];
     return (uint32_t) ttc_cnt;
+}
+
+uint32_t ttc_interrupt(uint32_t interrupt){
+
+	Zynq_Ttc * ptr_ttc = NULL;
+	uint32_t ttc_num = 0;
+	uint32_t interrupt_reg = 0;
+	uint32_t ttc_tim_num = 1;
+
+	// toggle ^= 0xFF;
+	// *ptr = toggle;
+
+	ptr_ttc = Ptr_Ttc[ttc_num];
+
+	/** Clear Interrupt Status Flag */
+	interrupt_reg = ptr_ttc->interrupt_reg[ttc_tim_num];
+
+	return interrupt_reg;
 }

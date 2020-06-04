@@ -46,8 +46,8 @@
 
 #include<hw_zynq.h>
 #include<zynq_spi.h>
+#include <zynq_ttc.h>
 
-extern tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED];
 
 /**
  * Zynq-specific hardware initialization
@@ -56,16 +56,17 @@ extern tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED];
  *
  * @retval
  */
+
+
 void hw_init( void ){
 
-  /** Initialize TTC1_2 as S Tick */
+  /** Initialize TTC0_2 as S Tick */
   ttc_init(TTC0,TTCx_2,INTERVAL);
 
-  /** Config TTC1_2 ISR*/
+  /** Config TTC0_2 ISR*/
   interrupt_enable(TTC0_TTCx_2_INTERRUPT,TRUE);
-  // interrupt_enable(SPI_1_INTERRUPT,TRUE);
   interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
-  interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,5);
+  interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,1);
 
   // interrupt_enable(SPI_1_INTERRUPT,TRUE);
   // interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
@@ -127,10 +128,10 @@ uint32_t tick_set( uint32_t time ){
   uint32_t ret = 1;
 
   /** Set tick rate */
-  ret = ttc_request(TTC0, TTCx_2, time);
+  ttc_request(TTC0, TTCx_2, time);
 
   /** Start counting */
-  ttc_enable(TTC0, TTCx_2);
+  ret = ttc_enable(TTC0, TTCx_2);
 
   return ret;
 }

@@ -55,6 +55,8 @@
 }
 
 /** Type definition of the interrupt handler */
-typedef void (handler)(void * t);
+typedef void (*handler)(void);
 
+void sFIQ_handler( void ) __attribute__((interrupt("FIQ")));
+void install_interrupt( uint32_t interrupt_id, tHandler routine);
 #endif /* __S_ISR_H */

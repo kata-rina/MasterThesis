@@ -64,7 +64,7 @@ tHandler* fiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, ttc_interrupt_clear, FreeRTOS_Tick_Handler, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, ttc_interrupt_clear, ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ttc_interrupt_clear,
 	ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,

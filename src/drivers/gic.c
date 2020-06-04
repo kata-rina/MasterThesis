@@ -65,21 +65,25 @@ tHandler* fiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, ttc_interrupt_clear, FreeRTOS_Tick_Handler, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ttc_interrupt_clear,
-	ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, SPI_1_irq_handler, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL
 };
 
-extern void FreeRTOS_Tick_Handler( void );
-
+static uint32_t tog = 0xEE;
+/** 4GPIO (LED) in FPGA fabric */
+static uint32_t *led = (uint32_t *) 0x41200000;
 
 /* TODO - This is exception handling */
 void fiq_handler(uint32_t interrupt){
-	if (fiq_handlers[interrupt])
+	// *led = tog;
+	if (fiq_handlers[interrupt]){
+
 		fiq_handlers[interrupt]((void *) interrupt);
+	}
 }
 
 

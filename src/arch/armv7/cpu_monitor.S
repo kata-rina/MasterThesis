@@ -269,27 +269,13 @@ _mon_fiq_handler:
 	sub	lr, lr, #4			@ Adjust LR
 	push	{r4, lr}
 	push	{r0 - r3}
-	/* ACK FIQ */
-	mrc 	p15,4,r0,c15,c0,0		@ Read Periph Base Addr
-	add 	r0,r0, #0x0100			@ Add GIC interface offset (A9)
-	ldr 	r1,[r0,#_ASM_GIC_INT_ID]	@ Get interrupt ID
-	ldr 	r2,=interrupt
-	str 	r1,[r2]
-	ldr 	r0,[r0,#0x0C]			@ ACK FIQ
-	/* Save NS context */
+
 	SCR_NS_CLEAR				@ Disable NS bit and route FIQs in mon
 	GET_NS_WORLD_CONTEXT
 	WORLD_CONTEXT_SAVE
-	/* Handling FIQ */
-	ldr 	r2,=interrupt
-	ldr 	r0,[r2]
-	//bl 	ttc_interrupt_clear		/* FIXME - supposing always ttc_isr */
-	bl 	fiq_handler			/* FIXME - supposing always ttc_isr */
-	ldr 	r2,=interrupt
-	ldr 	r0,[r2]
-	ldr 	r1,=0x00
-	bl 	interrupt_clear
-	/* Restore FIQ state */
+
+  /* restore Secure world context */
+	@ /* Restore FIQ state */
 	pop 	{r1-r2}				@ Pop SPSR_FIQ and LR_FIQ
 	mov 	r0, sp				@ Update stack pointer
 	cps 	#FIQ_MODE
@@ -297,6 +283,7 @@ _mon_fiq_handler:
 	mov 	lr,r2
 	ldmfd 	r0, {r8-r13}			@ Restore all banked FIQ regs (R8-R14)
 	add 	r0,r0,#(6*4)			@ Update stack pointer
+
 	/* Get back to MON */
 	cps 	#MONITOR_MODE
 	mov 	sp,r0

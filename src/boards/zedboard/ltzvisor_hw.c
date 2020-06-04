@@ -98,7 +98,7 @@ uint32_t ltzvisor_hw_init(void){
 	interrupt_target_set(TTC1_TTCx_2_INTERRUPT,0,1);
 	interrupt_target_set(UART_1_INTERRUPT,0,1);
 
-	interrupt_enable(TTC0_TTCx_2_INTERRUPT, TRUE);
+	// interrupt_enable(TTC0_TTCx_2_INTERRUPT, TRUE);
 	interrupt_enable(SCUTIMER_INTERRUPT, TRUE);
 	interrupt_enable(GLOBAL_TIMER_IRQ, TRUE);
 
