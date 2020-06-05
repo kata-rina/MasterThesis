@@ -67,8 +67,8 @@ void hw_init( void ){
   interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
   interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,7);
 
-  /** Generate tick every 20 ms */
-  tick_set(20000);
+  /** Generate tick every 100 ms */
+  tick_set(1000000);
 
   // interrupt_enable(SPI_1_INTERRUPT,TRUE);
   // interrupt_target_set(SPI_1_INTERRUPT, 0, 1);

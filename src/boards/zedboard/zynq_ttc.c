@@ -262,8 +262,8 @@ uint32_t ttc_interrupt_clear(uint32_t interrupt){
 	uint32_t interrupt_reg = 0;
 	uint32_t ttc_tim_num = 0;
 
-	// toggle ^= 0xFF;
-	// *ptr = toggle;
+	toggle ^= 0xFF;
+	*ptr = toggle;
 
 	/** Check which TTC_timer generated the Interrupt */
 	switch (interrupt){

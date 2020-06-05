@@ -7,7 +7,7 @@ void led_blink( void * pvParameters );
 void main ( void ){
 
 	/** Initialize hardware */
-	hw_init();
+	// hw_init();
 
 	printk(" * Secure bare metal VM: running AA ... \n\t");
 
@@ -34,6 +34,7 @@ void led_blink( void * parameters ){
 	// static uint32_t *ptr = (uint32_t *) 0x41200000;
 	uint32_t i = 0;
 	for( ;; ){
-			YIELD();
+			printk("led blink\n");
+			// YIELD();
 		}
 }

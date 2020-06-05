@@ -9,13 +9,13 @@ void vFreeRTOS_SetupTickInterrupt( void ){
 	interrupt_enable(TTC0_TTCx_2_INTERRUPT,TRUE);
 	interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
 	// interrupt_priority_set(TTC0_TTCx_2_INTERRUPT, 14 << (TTC0_TTCx_2_INTERRUPT % 32));
-  interrupt_priority_set(TTC0_TTCx_2_INTERRUPT, 6);
+  interrupt_priority_set(TTC0_TTCx_2_INTERRUPT, 7);
 
 
 	vFreeRTOS_ClearTickInterrupt();
 
-	/* Set tick every 10 ms */
-	ttc_request(TTC0, TTCx_2, 10000);
+	/* Set tick every 100 ms */
+	ttc_request(TTC0, TTCx_2, 1000000);
 	ttc_enable(TTC0, TTCx_2);
 
 }

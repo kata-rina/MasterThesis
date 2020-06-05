@@ -27,7 +27,7 @@
 
 #define configUSE_CO_ROUTINES 0
 
-#define configTICK_RATE_HZ (50)
+#define configTICK_RATE_HZ (1)
 
 #define configCPU_CLOCK_HZ (666666687)
 
@@ -35,9 +35,9 @@
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
 
-#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200*2*2)
+#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*4*4*2*4 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536 ) )
 
 #define configMAX_TASK_NAME_LEN 10
 
@@ -77,9 +77,13 @@
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
-#define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F00000)
-#define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( 0x0100 )
+#define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F01000)
+#define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( -0xf00 )
+
+// #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F00000)
+// #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( 0x0100 )
 #define configUNIQUE_INTERRUPT_PRIORITIES                16
+#define configEOI_ADDRESS                               ( 0xF8F00110 )
 
 void vFreeRTOS_SetupTickInterrupt( void );
 void vFreeRTOS_ClearTickInterrupt( void );

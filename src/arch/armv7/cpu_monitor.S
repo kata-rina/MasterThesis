@@ -282,7 +282,7 @@ _mon_fiq_handler:
 	msr 	spsr,r1
 	mov 	lr,r2
 	ldmfd 	r0, {r8-r13}			@ Restore all banked FIQ regs (R8-R14)
-	add 	r0,r0,#(6*4)			@ Update stack pointer
+	add 	r0,r0,#(6*4)			  @ Update stack pointer
 
 	/* Get back to MON */
 	cps 	#MONITOR_MODE

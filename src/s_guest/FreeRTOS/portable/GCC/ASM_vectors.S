@@ -65,11 +65,10 @@
   #include <ltzvisor_syscall_asm.h>
 
 @ .org 0
-@ .text
-@ .arm
+.text
+.arm
 
 
-.global FIQInterrupt
 .global DataAbortInterrupt
 .global PrefetchAbortInterrupt
 .global vPortInstallFreeRTOSVectorTable
@@ -77,36 +76,92 @@
 
 .extern FreeRTOS_IRQ_Handler
 .extern FreeRTOS_SWI_Handler
+.extern vTaskSwitchContext
+
+ulCriticalNestingC : .word ulCriticalNesting
+ulPortTaskHasFPUContextC : .word ulPortTaskHasFPUContext
+pxCurrentTCBConst: .word pxCurrentTCB
+
+
+
+
+.macro macroSAVE_CONTEXT
+
+    /* Save the LR and SPSR onto the system mode stack before switching to
+    system mode to save the remaining system mode registers. */
+    SRSDB	sp!, #SYS_MODE
+    CPS		#SYS_MODE
+    PUSH	{R0-R12, R14}
+
+    /* Push the critical nesting count. */
+    LDR		R2, ulCriticalNestingC
+    LDR		R1, [R2]
+    PUSH	{R1}
+
+    /* Does the task have a floating point context that needs saving?  If
+    ulPortTaskHasFPUContext is 0 then no. */
+    LDR		R2, ulPortTaskHasFPUContextC
+    LDR		R3, [R2]
+    CMP		R3, #0
+
+    /* Save the floating point context, if any. */
+    FMRXNE  R1,  FPSCR
+    VPUSHNE {D0-D15}
+    VPUSHNE	{D16-D31}
+    PUSHNE	{R1}
+
+    /* Save ulPortTaskHasFPUContext itself. */
+    PUSH	{R3}
+
+    /* Save the stack pointer in the TCB. */
+    LDR		R0, pxCurrentTCBConst
+    LDR		R1, [R0]
+    STR		SP, [R1]
+
+    .endm
+
+
+
+
 
 .align 8
-@ .section .freertos_vectors
+
 .global _freertos_vector_table
 _freertos_vector_table:
-	B	  .
-	B	  FreeRTOS_Undefined
+	B	    .
+	B	    FreeRTOS_Undefined
 	ldr   pc, _swi
-	B	  FreeRTOS_PrefetchAbortHandler
-	B	  FreeRTOS_DataAbortHandler
+	B	    FreeRTOS_PrefetchAbortHandler
+	B	    FreeRTOS_DataAbortHandler
 	NOP	  /* Placeholder for address exception vector*/
+  @ B     .
 	LDR   PC, _irq
-  @ LDR   PC, _fiq
-	B	  FreeRTOS_FIQHandler
+  LDR   PC, _fiq
+	@ B	    FreeRTOS_FIQHandler
 
 _irq:   .word FreeRTOS_IRQ_Handler
 _swi:   .word FreeRTOS_SWI_Handler
-
-@ _fiq:
-@     .word sFIQ_handler
+_fiq:   .word sFIQ_handler
 
 .align 4
-FreeRTOS_FIQHandler:			/* FIQ vector handler */
+FreeRTOS_FIQHandler:			                 /* FIQ vector handler */
+	stmdb	   sp!,{r0-r3,r12,lr}	             /* state save from compiled code */
+  b        sFIQ_handler
+  @ blx      sFIQ_handler                    /* FIQ vector */
+  @ ldr      r1,=ulPortYieldRequired       /* check whether some task waits for execution*/
+  @ cmp      r1, #0
+  @ bne      switch_context                /* switch task context*/
 
-	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
-FIQLoop:
-  blx sFIQ_handler
-	@ blx	FIQInterrupt			/* FIQ vector */
-	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
-	subs	pc, lr, #4			/* adjust return */
+	ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
+	subs	   pc, lr, #4			     /* adjust return */
+
+@ switch_context:
+@   ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
+@   macroSAVE_CONTEXT
+@
+@   blx      vTaskSwitchContext
+
+
 
 .align 4
 FreeRTOS_Undefined:				/* Undefined handler */

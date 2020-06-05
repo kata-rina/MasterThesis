@@ -19,11 +19,12 @@
 /* some other task to signalize that FreeRTOS is alive */
 void vTask1(void *pvParameters) {
   uint32_t i = 0;
-  printk("T\n");
+
   while(1){
     i++;
-    if((i%20000) == 0){
-      printk("Task\n");
+    if((i%200000) == 0){
+      i=0;
+      YIELD()
     }
 
     // YIELD()

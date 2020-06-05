@@ -74,19 +74,21 @@ tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
 
 void sFIQ_handler( void ){
 
+	/* disable fiqs */
+	// __asm volatile("CPSID f");
 	uint32_t interrupt_;
+
 
 	/* Get interrupt number and acknowledge the interrupt */
 	interrupt_ = interrupt_number_get();
+
+	/* Clear interrupt */
+	interrupt_clear(interrupt_, 0);
 
 	/* Call interrupt handler */
 	if (sfiq_handlers[interrupt_]){
 		sfiq_handlers[interrupt_]((void *) interrupt_);
 	}
-
-	/* Clear interrupt */
-	interrupt_clear(interrupt_, 0);
-
 
 }
 

@@ -158,24 +158,33 @@ mode. */
 determined priority level.  Sometimes it is necessary to turn interrupt off in
 the CPU itself before modifying certain hardware registers. */
 #define portCPU_IRQ_DISABLE()										\
-	__asm volatile ( "CPSID if" ::: "memory");									\
+	__asm volatile ( "CPSID i" ::: "memory");									\
 	__asm volatile ( "DSB" );										\
 	__asm volatile ( "ISB" );
 
 #define portCPU_IRQ_ENABLE()										\
-	__asm volatile ( "CPSIE if" ::: "memory");									\
+	__asm volatile ( "CPSIE i" ::: "memory");									\
 	__asm volatile ( "DSB" );										\
 	__asm volatile ( "ISB" );
 
+#define portCPU_FIQ_DISABLE()										\
+	__asm volatile ( "CPSID f" ::: "memory");									\
+	__asm volatile ( "DSB" );										\
+	__asm volatile ( "ISB" );
+
+#define portCPU_FIQ_ENABLE()										\
+	__asm volatile ( "CPSIE f" ::: "memory");									\
+	__asm volatile ( "DSB" );										\
+	__asm volatile ( "ISB" );
 
 /* Macro to unmask all interrupt priorities. */
 #define portCLEAR_INTERRUPT_MASK()									\
 {																	\
-	portCPU_IRQ_DISABLE();											\
+	portCPU_FIQ_DISABLE();											\
 	portICCPMR_PRIORITY_MASK_REGISTER = portUNMASK_VALUE;			\
 	__asm volatile (	"DSB		\n"								\
 						"ISB		\n" );							\
-	portCPU_IRQ_ENABLE();											\
+	portCPU_FIQ_ENABLE();											\
 }
 
 #define portINTERRUPT_PRIORITY_REGISTER_OFFSET		0x400UL
@@ -427,7 +436,9 @@ uint32_t ulAPSR;
 			not execute	while the scheduler is being started.  Interrupts are
 			automatically turned back on in the CPU when the first task starts
 			executing. */
-			portCPU_IRQ_DISABLE();
+			// portCPU_IRQ_DISABLE();
+			portCPU_FIQ_DISABLE();
+
 			/* Start the timer that generates the tick ISR. */
 			configSETUP_TICK_INTERRUPT();
 
@@ -507,13 +518,15 @@ void FreeRTOS_Tick_Handler( void )
 	necessary to turn off interrupts in the CPU itself while the ICCPMR is being
 	updated. */
 	// toggle ^= 0xFF;
-	printk("U fiq\n");
-	portCPU_IRQ_DISABLE();
+	// *ptr = toggle;
+	// printk("f\n");
+	// configCLEAR_TICK_INTERRUPT();
+	// portCPU_FIQ_DISABLE();
 
-	portICCPMR_PRIORITY_MASK_REGISTER = ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
-	__asm volatile (	"dsb		\n"
-						"isb		\n" );
-	portCPU_IRQ_ENABLE();
+	// portICCPMR_PRIORITY_MASK_REGISTER = ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
+	// __asm volatile (	"dsb		\n"
+	// 					"isb		\n" );
+	// portCPU_FIQ_ENABLE();
 
 	/* Increment the RTOS tick. */
 	if( xTaskIncrementTick() != pdFALSE )
@@ -522,7 +535,7 @@ void FreeRTOS_Tick_Handler( void )
 	}
 
 	/* Ensure all interrupt priorities are active again. */
-	portCLEAR_INTERRUPT_MASK();
+	// portCLEAR_INTERRUPT_MASK();
 
 	configCLEAR_TICK_INTERRUPT();
 
@@ -563,7 +576,9 @@ uint32_t ulReturn;
 
 	/* Interrupt in the CPU must be turned off while the ICCPMR is being
 	updated. */
-	portCPU_IRQ_DISABLE();
+	// portCPU_IRQ_DISABLE();
+	portCPU_FIQ_DISABLE();
+
 
 	if( portICCPMR_PRIORITY_MASK_REGISTER == ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT ) )
 	{
@@ -580,7 +595,9 @@ uint32_t ulReturn;
 
 	}
 
-	portCPU_IRQ_ENABLE();
+	// portCPU_IRQ_ENABLE();
+	portCPU_FIQ_ENABLE();
+
 
 	return ulReturn;
 }
