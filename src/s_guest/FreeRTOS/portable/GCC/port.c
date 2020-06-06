@@ -522,7 +522,7 @@ void FreeRTOS_Tick_Handler( void )
 	// printk("f\n");
 	// configCLEAR_TICK_INTERRUPT();
 	// portCPU_FIQ_DISABLE();
-
+	//
 	// portICCPMR_PRIORITY_MASK_REGISTER = ( uint32_t ) ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
 	// __asm volatile (	"dsb		\n"
 	// 					"isb		\n" );
@@ -532,6 +532,9 @@ void FreeRTOS_Tick_Handler( void )
 	if( xTaskIncrementTick() != pdFALSE )
 	{
 		ulPortYieldRequired = pdTRUE;
+	}
+	else{
+		ulPortYieldRequired = pdFALSE;
 	}
 
 	/* Ensure all interrupt priorities are active again. */

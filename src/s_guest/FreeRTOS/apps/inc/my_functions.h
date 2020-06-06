@@ -9,7 +9,7 @@
 #include<hw_zynq.h>
 #include<printk.h>
 
-// void vApplicationIdleHook( void );
+void vApplicationIdleHook( void );
 void vTask1( void *pvParameters);
 
 #endif

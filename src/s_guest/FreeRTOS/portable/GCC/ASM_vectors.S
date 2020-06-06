@@ -64,6 +64,7 @@
 @ #include "xil_errata.h"
   #include <ltzvisor_syscall_asm.h>
 
+
 @ .org 0
 .text
 .arm
@@ -89,8 +90,8 @@ pxCurrentTCBConst: .word pxCurrentTCB
 
     /* Save the LR and SPSR onto the system mode stack before switching to
     system mode to save the remaining system mode registers. */
-    SRSDB	sp!, #SYS_MODE
-    CPS		#SYS_MODE
+    SRSDB	sp!, #0x1f
+    CPS		#0x1f
     PUSH	{R0-R12, R14}
 
     /* Push the critical nesting count. */
@@ -134,10 +135,9 @@ _freertos_vector_table:
 	B	    FreeRTOS_PrefetchAbortHandler
 	B	    FreeRTOS_DataAbortHandler
 	NOP	  /* Placeholder for address exception vector*/
-  @ B     .
 	LDR   PC, _irq
-  LDR   PC, _fiq
-	@ B	    FreeRTOS_FIQHandler
+  @ LDR   PC, _fiq
+	B	    FreeRTOS_FIQHandler
 
 _irq:   .word FreeRTOS_IRQ_Handler
 _swi:   .word FreeRTOS_SWI_Handler
@@ -146,20 +146,20 @@ _fiq:   .word sFIQ_handler
 .align 4
 FreeRTOS_FIQHandler:			                 /* FIQ vector handler */
 	stmdb	   sp!,{r0-r3,r12,lr}	             /* state save from compiled code */
-  b        sFIQ_handler
-  @ blx      sFIQ_handler                    /* FIQ vector */
-  @ ldr      r1,=ulPortYieldRequired       /* check whether some task waits for execution*/
-  @ cmp      r1, #0
-  @ bne      switch_context                /* switch task context*/
+  blx        sFIQ_handler
+  @ blx      sFIQ_handler                  /* FIQ vector */
+  ldr      r1,=ulPortYieldRequired         /* check whether some task waits for execution*/
+  cmp      r1, #0
+  bne      switch_context                  /* switch task context*/
 
 	ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
 	subs	   pc, lr, #4			     /* adjust return */
 
-@ switch_context:
-@   ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
-@   macroSAVE_CONTEXT
-@
-@   blx      vTaskSwitchContext
+switch_context:
+  ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
+  macroSAVE_CONTEXT
+
+  blx      vTaskSwitchContext
 
 
 

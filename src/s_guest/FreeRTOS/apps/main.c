@@ -15,13 +15,13 @@ void main ( void ){
 	// led_blink((void*)0);
 
   /* create one task */
-  xTaskCreate(
-    vTask1,
-    (const signed char *)"TASK1",
-    configMINIMAL_STACK_SIZE,
-    NULL,
-    2,
-    NULL);
+  // xTaskCreate(
+  //   vTask1,
+  //   (const signed char *)"TASK1",
+  //   configMINIMAL_STACK_SIZE,
+  //   NULL,
+  //   2,
+  //   NULL);
 
   vTaskStartScheduler();
 
@@ -34,7 +34,7 @@ void led_blink( void * parameters ){
 	// static uint32_t *ptr = (uint32_t *) 0x41200000;
 	uint32_t i = 0;
 	for( ;; ){
-			printk("led blink\n");
-			// YIELD();
+			// printk("led blink\n");
+			YIELD();
 		}
 }

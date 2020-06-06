@@ -13,7 +13,7 @@
 
 #define configUSE_TIMERS 1
 
-#define configUSE_IDLE_HOOK 0
+#define configUSE_IDLE_HOOK 1
 
 #define configUSE_TICK_HOOK 0
 
@@ -37,7 +37,7 @@
 
 #define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*2 ) )
 
 #define configMAX_TASK_NAME_LEN 10
 
@@ -47,7 +47,7 @@
 
 #define configTIMER_QUEUE_LENGTH 10
 
-#define configTIMER_TASK_STACK_DEPTH ((configMINIMAL_STACK_SIZE) * 2)
+#define configTIMER_TASK_STACK_DEPTH ((configMINIMAL_STACK_SIZE) * 8)
 
 #define configUSE_QUEUE_SETS 1
 
@@ -73,7 +73,7 @@
 #define INCLUDE_eTaskGetState                1
 #define INCLUDE_xTimerPendFunctionCall       1
 #define INCLUDE_pcTaskGetTaskName            1
-#define configMAX_API_CALL_INTERRUPT_PRIORITY (10)
+#define configMAX_API_CALL_INTERRUPT_PRIORITY (18)
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
@@ -82,7 +82,7 @@
 
 // #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F00000)
 // #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( 0x0100 )
-#define configUNIQUE_INTERRUPT_PRIORITIES                16
+#define configUNIQUE_INTERRUPT_PRIORITIES                32
 #define configEOI_ADDRESS                               ( 0xF8F00110 )
 
 void vFreeRTOS_SetupTickInterrupt( void );
