@@ -15,13 +15,13 @@ void main ( void ){
 	// led_blink((void*)0);
 
   /* create one task */
-  // xTaskCreate(
-  //   vTask1,
-  //   (const signed char *)"TASK1",
-  //   configMINIMAL_STACK_SIZE,
-  //   NULL,
-  //   2,
-  //   NULL);
+  xTaskCreate(
+    vTask1,
+    (const signed char *)"TASK1",
+    configMINIMAL_STACK_SIZE,
+    NULL,
+    2,
+    NULL);
 
   vTaskStartScheduler();
 

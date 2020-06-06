@@ -35,9 +35,9 @@
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
 
-#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200)
+#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 200*8)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*2 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*2*2 ) )
 
 #define configMAX_TASK_NAME_LEN 10
 
@@ -47,7 +47,7 @@
 
 #define configTIMER_QUEUE_LENGTH 10
 
-#define configTIMER_TASK_STACK_DEPTH ((configMINIMAL_STACK_SIZE) * 8)
+#define configTIMER_TASK_STACK_DEPTH ((configMINIMAL_STACK_SIZE) * 2)
 
 #define configUSE_QUEUE_SETS 1
 

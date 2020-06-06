@@ -82,11 +82,12 @@
 ulCriticalNestingC : .word ulCriticalNesting
 ulPortTaskHasFPUContextC : .word ulPortTaskHasFPUContext
 pxCurrentTCBConst: .word pxCurrentTCB
+ulICCPMRConst: .word ulICCPMR
+ulMaxAPIPriorityMaskConst: .word ulMaxAPIPriorityMask
 
 
-
-
-.macro macroSAVE_CONTEXT
+//==============================================================================
+.macro pSAVE_CONTEXT
 
     /* Save the LR and SPSR onto the system mode stack before switching to
     system mode to save the remaining system mode registers. */
@@ -123,7 +124,53 @@ pxCurrentTCBConst: .word pxCurrentTCB
 
 
 
+//==============================================================================
 
+.macro pRESTORE_CONTEXT
+
+	/* Set the SP to point to the stack of the task being restored. */
+	LDR		R0, pxCurrentTCBConst
+	LDR		R1, [R0]
+	LDR		SP, [R1]
+
+	/* Is there a floating point context to restore?  If the restored
+	ulPortTaskHasFPUContext is zero then no. */
+	LDR		R0, ulPortTaskHasFPUContextC
+	POP		{R1}
+	STR		R1, [R0]
+	CMP		R1, #0
+
+	/* Restore the floating point context, if any. */
+	POPNE 	{R0}
+	VPOPNE	{D16-D31}
+	VPOPNE	{D0-D15}
+	VMSRNE  FPSCR, R0
+
+	/* Restore the critical section nesting depth. */
+	LDR		R0, ulCriticalNestingC
+	POP		{R1}
+	STR		R1, [R0]
+
+	/* Ensure the priority mask is correct for the critical nesting depth. */
+	LDR		R2, ulICCPMRConst
+	LDR		R2, [R2]
+	CMP		R1, #0
+	MOVEQ	R4, #255
+	LDRNE	R4, ulMaxAPIPriorityMaskConst
+	LDRNE	R4, [R4]
+	STR		R4, [R2]
+
+	/* Restore all system mode registers other than the SP (which is already
+	being used). */
+	POP		{R0-R12, R14}
+
+	/* Return to the task code, loading CPSR on the way. */
+	RFEIA	sp!
+
+	.endm
+
+
+//==============================================================================
 
 .align 8
 
@@ -136,18 +183,17 @@ _freertos_vector_table:
 	B	    FreeRTOS_DataAbortHandler
 	NOP	  /* Placeholder for address exception vector*/
 	LDR   PC, _irq
-  @ LDR   PC, _fiq
 	B	    FreeRTOS_FIQHandler
 
 _irq:   .word FreeRTOS_IRQ_Handler
 _swi:   .word FreeRTOS_SWI_Handler
-_fiq:   .word sFIQ_handler
+
 
 .align 4
 FreeRTOS_FIQHandler:			                 /* FIQ vector handler */
+
 	stmdb	   sp!,{r0-r3,r12,lr}	             /* state save from compiled code */
   blx        sFIQ_handler
-  @ blx      sFIQ_handler                  /* FIQ vector */
   ldr      r1,=ulPortYieldRequired         /* check whether some task waits for execution*/
   cmp      r1, #0
   bne      switch_context                  /* switch task context*/
@@ -157,9 +203,15 @@ FreeRTOS_FIQHandler:			                 /* FIQ vector handler */
 
 switch_context:
   ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
-  macroSAVE_CONTEXT
+  pSAVE_CONTEXT
 
   blx      vTaskSwitchContext
+
+	/* Restore the context of, and branch to, the task selected to execute
+	next. */
+	pRESTORE_CONTEXT
+
+
 
 
 
