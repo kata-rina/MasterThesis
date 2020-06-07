@@ -77,13 +77,17 @@
 
 .extern FreeRTOS_IRQ_Handler
 .extern FreeRTOS_SWI_Handler
-.extern vTaskSwitchContext
+@ .extern vTaskSwitchContext
 
 ulCriticalNestingC : .word ulCriticalNesting
 ulPortTaskHasFPUContextC : .word ulPortTaskHasFPUContext
 pxCurrentTCBConst: .word pxCurrentTCB
 ulICCPMRConst: .word ulICCPMR
 ulMaxAPIPriorityMaskConst: .word ulMaxAPIPriorityMask
+vTaskSwitchContextConst : .word vTaskSwitchContext
+
+.set FIQ_MODE, 0x11
+.set SYS_MODE, 0x1f
 
 
 //==============================================================================
@@ -92,6 +96,7 @@ ulMaxAPIPriorityMaskConst: .word ulMaxAPIPriorityMask
     /* Save the LR and SPSR onto the system mode stack before switching to
     system mode to save the remaining system mode registers. */
     SRSDB	sp!, #0x1f
+    PUSH {r8-r12,lr}
     CPS		#0x1f
     PUSH	{R0-R12, R14}
 
@@ -165,6 +170,9 @@ ulMaxAPIPriorityMaskConst: .word ulMaxAPIPriorityMask
 	POP		{R0-R12, R14}
 
 	/* Return to the task code, loading CPSR on the way. */
+  CPS     #FIQ_MODE
+  POP     {r8-r12,lr}
+  CPS     #SYS_MODE
 	RFEIA	sp!
 
 	.endm
@@ -183,17 +191,20 @@ _freertos_vector_table:
 	B	    FreeRTOS_DataAbortHandler
 	NOP	  /* Placeholder for address exception vector*/
 	LDR   PC, _irq
-	B	    FreeRTOS_FIQHandler
+  LDR   PC, _fiq
 
 _irq:   .word FreeRTOS_IRQ_Handler
 _swi:   .word FreeRTOS_SWI_Handler
+_fiq:   .word FreeRTOS_FIQ_Handler
+
+
 
 
 .align 4
-FreeRTOS_FIQHandler:			                 /* FIQ vector handler */
+FreeRTOS_FIQ_Handler:			                 /* FIQ vector handler */
 
 	stmdb	   sp!,{r0-r3,r12,lr}	             /* state save from compiled code */
-  blx        sFIQ_handler
+  blx      sFIQ_handler
   ldr      r1,=ulPortYieldRequired         /* check whether some task waits for execution*/
   cmp      r1, #0
   bne      switch_context                  /* switch task context*/

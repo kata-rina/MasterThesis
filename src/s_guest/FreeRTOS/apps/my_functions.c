@@ -3,6 +3,7 @@
 #include <FreeRTOS.h>
 
 static uint32_t toggle = 0x00;
+uint32_t cnt = 0;
 /** 4GPIO (LED) in FPGA fabric */
 static uint32_t *ptr = (uint32_t *) 0x41200000;
 
@@ -11,22 +12,20 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 void vApplicationIdleHook( void ) {
 
     /* call scheduler */
-    while(1){
-      YIELD();
-    }
+      cnt++;
+      if (cnt == 1000000){
+        cnt = 0;
+      }
+      // YIELD()
 }
 
 /* some other task to signalize that FreeRTOS is alive */
 void vTask1(void *pvParameters) {
-  uint32_t i = 0;
 
   while(1){
-    i++;
-    if((i%200000) == 0){
-      vTaskDelay( 10000 / portTICK_RATE_MS);
-      toggle ^= 0xFF;
-      *ptr = toggle;
-      i=0;
-    }
+    // toggle ^= 0xFF;
+    // *ptr = toggle;
+    printk("Task1\n");
+    vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

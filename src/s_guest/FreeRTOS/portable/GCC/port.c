@@ -268,6 +268,7 @@ __attribute__(( used )) const uint32_t ulICCEOIR = portICCEOIR_END_OF_INTERRUPT_
 __attribute__(( used )) const uint32_t ulICCPMR	= portICCPMR_PRIORITY_MASK_REGISTER_ADDRESS;
 __attribute__(( used )) const uint32_t ulMaxAPIPriorityMask = ( configMAX_API_CALL_INTERRUPT_PRIORITY << portPRIORITY_SHIFT );
 
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -508,6 +509,7 @@ void vPortExitCritical( void )
 		}
 	}
 }
+
 /*-----------------------------------------------------------*/
 
 void FreeRTOS_Tick_Handler( void )
@@ -523,6 +525,7 @@ void FreeRTOS_Tick_Handler( void )
 	// __asm volatile (	"dsb		\n"
 	// 					"isb		\n" );
 	// portCPU_FIQ_ENABLE();
+	configCLEAR_TICK_INTERRUPT();
 
 	/* Increment the RTOS tick. */
 	if( xTaskIncrementTick() != pdFALSE )
@@ -533,10 +536,6 @@ void FreeRTOS_Tick_Handler( void )
 		ulPortYieldRequired = pdFALSE;
 	}
 
-	/* Ensure all interrupt priorities are active again. */
-	// portCLEAR_INTERRUPT_MASK();
-
-	configCLEAR_TICK_INTERRUPT();
 
 }
 /*-----------------------------------------------------------*/

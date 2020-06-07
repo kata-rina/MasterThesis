@@ -58,6 +58,7 @@
 	.set SYS_MODE,	0x1f
 	.set SVC_MODE,	0x13
 	.set IRQ_MODE,	0x12
+	.set FIQ_MODE,	0x11
 
 	/* Hardware registers. */
 	.extern ulICCIAR
@@ -257,7 +258,7 @@ exit_without_switch:
 	/* No context switch.  Restore used registers, LR_irq and SPSR before
 	returning. */
 	POP		{r0-r4, r12}
-	CPS		#IRQ_MODE
+	CPS		#FIQ_MODE
 	POP		{LR}
 	MSR		SPSR_cxsf, LR
 	POP		{LR}
@@ -272,7 +273,7 @@ switch_before_exit:
 	/* Restore used registers, LR-irq and SPSR before saving the context
 	to the task stack. */
 	POP		{r0-r4, r12}
-	CPS		#IRQ_MODE
+	CPS		#FIQ_MODE
 	POP		{LR}
 	MSR		SPSR_cxsf, LR
 	POP		{LR}
@@ -307,6 +308,7 @@ switch_before_exit:
  * FPU registers to be saved on interrupt entry their IRQ handler must be
  * called vApplicationIRQHandler().
  *****************************************************************************/
+.extern sFIQ_handler
 
 .align 4
 .weak vApplicationIRQHandler
@@ -318,8 +320,9 @@ vApplicationIRQHandler:
 	VPUSH	{D16-D31}
 	PUSH	{R1}
 
-	LDR		r1, vApplicationFPUSafeIRQHandlerConst
-	BLX		r1
+	BLX 		sFIQ_handler
+	@ LDR		r1, vApplicationFPUSafeIRQHandlerConst
+	@ BLX		r1
 
 	POP		{R0}
 	VPOP	{D16-D31}
@@ -342,8 +345,3 @@ ulPortInterruptNestingConst: .word ulPortInterruptNesting
 vApplicationFPUSafeIRQHandlerConst: .word vApplicationFPUSafeIRQHandler
 
 .end
-
-
-
-
-
