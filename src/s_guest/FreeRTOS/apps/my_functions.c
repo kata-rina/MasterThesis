@@ -12,8 +12,9 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 void vApplicationIdleHook( void ) {
 
     /* call scheduler */
+      // printk("idle\n");
       cnt++;
-      if (cnt == 1000000){
+      if(cnt == 50000){
         cnt = 0;
       }
       // YIELD()
@@ -23,8 +24,6 @@ void vApplicationIdleHook( void ) {
 void vTask1(void *pvParameters) {
 
   while(1){
-    // toggle ^= 0xFF;
-    // *ptr = toggle;
     printk("Task1\n");
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }

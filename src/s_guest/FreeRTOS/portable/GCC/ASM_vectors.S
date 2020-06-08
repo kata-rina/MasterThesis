@@ -190,39 +190,11 @@ _freertos_vector_table:
 	B	    FreeRTOS_PrefetchAbortHandler
 	B	    FreeRTOS_DataAbortHandler
 	NOP	  /* Placeholder for address exception vector*/
-	LDR   PC, _irq
+	B     .
   LDR   PC, _fiq
 
-_irq:   .word FreeRTOS_IRQ_Handler
 _swi:   .word FreeRTOS_SWI_Handler
-_fiq:   .word FreeRTOS_FIQ_Handler
-
-
-
-
-.align 4
-FreeRTOS_FIQ_Handler:			                 /* FIQ vector handler */
-
-	stmdb	   sp!,{r0-r3,r12,lr}	             /* state save from compiled code */
-  blx      sFIQ_handler
-  ldr      r1,=ulPortYieldRequired         /* check whether some task waits for execution*/
-  cmp      r1, #0
-  bne      switch_context                  /* switch task context*/
-
-	ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
-	subs	   pc, lr, #4			     /* adjust return */
-
-switch_context:
-  ldmia	   sp!,{r0-r3,r12,lr}	 /* state restore from compiled code */
-  pSAVE_CONTEXT
-
-  blx      vTaskSwitchContext
-
-	/* Restore the context of, and branch to, the task selected to execute
-	next. */
-	pRESTORE_CONTEXT
-
-
+_fiq:   .word FreeRTOS_IRQ_Handler
 
 
 

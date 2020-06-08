@@ -56,7 +56,7 @@ tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, ttc_interrupt_clear, ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, ttc_interrupt_clear, FreeRTOS_Tick_Handler, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ttc_interrupt_clear,
 	ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -72,18 +72,7 @@ tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
  * @retval
  */
 
-void sFIQ_handler( void ){
-
-	/* disable fiqs */
-	// __asm volatile("CPSID f");
-	uint32_t interrupt_;
-
-
-	/* Get interrupt number and acknowledge the interrupt */
-	interrupt_ = interrupt_number_get();
-
-	/* Clear interrupt */
-	interrupt_clear(interrupt_, 0);
+void sFIQ_handler( uint32_t interrupt_ ){
 
 	/* Call interrupt handler */
 	if (sfiq_handlers[interrupt_]){

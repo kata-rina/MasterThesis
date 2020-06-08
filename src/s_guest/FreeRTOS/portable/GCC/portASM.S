@@ -163,6 +163,18 @@
 
 
 
+/*******************************************************************************/
+.macro DISABLE_FIQ
+	PUSH	{r0-r1}
+	LDR		R0, ulICCPMRConst
+	LDR		R0, [R0]
+	MOV		r1, #1
+	STR		r1, [r0]
+	POP		{r0-r1}
+.endm
+
+
+
 
 /******************************************************************************
  * SVC handler is used to start the scheduler.
@@ -186,6 +198,8 @@ vPortRestoreTaskContext:
 	CPS		#SYS_MODE
 	portRESTORE_CONTEXT
 
+.extern sFIQ_handler
+
 .align 4
 .type FreeRTOS_IRQ_Handler, %function
 FreeRTOS_IRQ_Handler:
@@ -203,6 +217,33 @@ FreeRTOS_IRQ_Handler:
 	/* Push used registers. */
 	PUSH	{r0-r4, r12}
 
+
+	/* Read value from the interrupt acknowledge register, which is stored in r0
+	for future parameter and interrupt clearing use. */
+	LDR 	r2, ulICCIARConst
+	LDR		r2, [r2]
+	LDR		r0, [r2]
+
+	@ /* If acknowledge interrupt is #1, this is the yield interrupt */
+
+	CMP		r0, #0
+	BNE		1f
+
+	BLX		sFIQ_handler
+	/*	Clear interrupt */
+	LDR 	r4, ulICCEOIRConst
+	LDR		r4, [r4]
+	STR		r0, [r4]
+
+	POP		{r0-r4, r12}
+	CPS		#FIQ_MODE
+	POP		{LR}
+	MSR		SPSR_cxsf, LR
+	POP		{LR}
+
+	B		FreeRTOS_SWI_Handler
+
+1:
 	/* Increment nesting count.  r3 holds the address of ulPortInterruptNesting
 	for future use.  r1 holds the original ulPortInterruptNesting value for
 	future use. */
@@ -211,30 +252,21 @@ FreeRTOS_IRQ_Handler:
 	ADD		r4, r1, #1
 	STR		r4, [r3]
 
-	/* Read value from the interrupt acknowledge register, which is stored in r0
-	for future parameter and interrupt clearing use. */
-	LDR 	r2, ulICCIARConst
-	LDR		r2, [r2]
-	LDR		r0, [r2]
-
 	/* Ensure bit 2 of the stack pointer is clear.  r2 holds the bit 2 value for
-	future use. */
+	future use.  _RB_ Does this ever actually need to be done provided the start
+	of the stack is 8-byte aligned? */
 	MOV		r2, sp
 	AND		r2, r2, #4
 	SUB		sp, sp, r2
 
-	/* Call the interrupt handler. */
-	PUSH	{r0-r3, lr}
-	LDR		r1, vApplicationIRQHandlerConst
-	BLX		r1
-	POP		{r0-r3, lr}
+	/* Call the interrupt handler.  r4 pushed to maintain alignment. */
+	PUSH	{r0-r4, lr}
+	BLX		sFIQ_handler
+	POP		{r0-r4, lr}
 	ADD		sp, sp, r2
 
-	CPSID	i
-	DSB
-	ISB
 
-	/* Write the value read from ICCIAR to ICCEOIR. */
+	/* Write the value read from ICCIAR to ICCEOIR - clear interrupt. */
 	LDR 	r4, ulICCEOIRConst
 	LDR		r4, [r4]
 	STR		r0, [r4]
@@ -291,6 +323,7 @@ switch_before_exit:
 	portRESTORE_CONTEXT
 
 
+
 /******************************************************************************
  * If the application provides an implementation of vApplicationIRQHandler(),
  * then it will get called directly without saving the FPU registers on
@@ -308,7 +341,6 @@ switch_before_exit:
  * FPU registers to be saved on interrupt entry their IRQ handler must be
  * called vApplicationIRQHandler().
  *****************************************************************************/
-.extern sFIQ_handler
 
 .align 4
 .weak vApplicationIRQHandler
@@ -320,7 +352,7 @@ vApplicationIRQHandler:
 	VPUSH	{D16-D31}
 	PUSH	{R1}
 
-	BLX 		sFIQ_handler
+	BLX		sFIQ_handler
 	@ LDR		r1, vApplicationFPUSafeIRQHandlerConst
 	@ BLX		r1
 
