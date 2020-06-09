@@ -59,6 +59,12 @@ typedef void (*handler)(void);
 
 void sFIQ_handler( uint32_t interrupt_ );
 
+void sUndef_handler ( void );
+
+void sPrefetchAbort_handler( void );
+
+void sDataAbort_handler( void );
+
 void install_interrupt( uint32_t interrupt_id, tHandler routine);
 
 #endif /* __S_ISR_H */

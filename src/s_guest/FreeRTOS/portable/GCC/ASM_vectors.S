@@ -185,10 +185,10 @@ vTaskSwitchContextConst : .word vTaskSwitchContext
 .global _freertos_vector_table
 _freertos_vector_table:
 	B	    .
-	B	    FreeRTOS_Undefined
+	ldr   pc, _undef
 	ldr   pc, _swi
-	B	    FreeRTOS_PrefetchAbortHandler
-	B	    FreeRTOS_DataAbortHandler
+	ldr   pc, _pabort
+	ldr   pc, _dabort
 	NOP	  /* Placeholder for address exception vector*/
 	B     .
   LDR   PC, _fiq
@@ -196,35 +196,14 @@ _freertos_vector_table:
 _swi:   .word FreeRTOS_SWI_Handler
 _fiq:   .word FreeRTOS_IRQ_Handler
 
+.extern sUndef_handler
+.extern sPrefetchAbort_handler
+.extern sDataAbort_handler
 
+_undef:   .word sUndef_handler
+_pabort:  .word sPrefetchAbort_handler
+_dabort:  .word sDataAbort_handler
 
-.align 4
-FreeRTOS_Undefined:				/* Undefined handler */
-	b		.
-
-.align 4
-FreeRTOS_DataAbortHandler:		/* Data Abort handler */
-  b . /* stuck here */
-
-@ #ifdef CONFIG_ARM_ERRATA_775420
-@ 	dsb
-@ #endif
-@ 	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
-@ 	blx	DataAbortInterrupt		/*DataAbortInterrupt :call C function here */
-@ 	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
-@ 	subs	pc, lr, #4			/* adjust return */
-
-.align 4
-FreeRTOS_PrefetchAbortHandler:	/* Prefetch Abort handler */
-  b . /* stuck here*/
-
-@ #ifdef CONFIG_ARM_ERRATA_775420
-@ 	dsb
-@ #endif
-@ 	stmdb	sp!,{r0-r3,r12,lr}	/* state save from compiled code */
-@ 	blx	PrefetchAbortInterrupt	/* PrefetchAbortInterrupt: call C function here */
-@ 	ldmia	sp!,{r0-r3,r12,lr}	/* state restore from compiled code */
-@ 	subs	pc, lr, #4			/* adjust return */
 
 .align 4
 .type vPortInstallFreeRTOSVectorTable, %function

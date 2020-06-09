@@ -81,6 +81,32 @@ void sFIQ_handler( uint32_t interrupt_ ){
 
 }
 
+
+
+void sUndef_handler ( void ){
+
+		printk("ERROR: Secure undefined \n");
+		while(1);
+
+}
+
+
+
+void sPrefetchAbort_handler( void ){
+
+	printk("ERROR: Secure prefetch abort \n");
+	while(1);
+
+}
+
+
+void sDataAbort_handler( void ){
+
+	printk("ERROR: Secure data abort \n");
+	while(1);
+
+}
+
 /**
  * Connect interrupt request with interrupt handler
  *
