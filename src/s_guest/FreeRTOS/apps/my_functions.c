@@ -13,17 +13,19 @@ void vApplicationIdleHook( void ) {
 
     /* call scheduler */
       // printk("idle\n");
-      cnt++;
-      if(cnt == 50000){
-        cnt = 0;
-      }
-      // YIELD()
+      // cnt++;
+      // if(cnt == 50000){
+      //   cnt = 0;
+      // }
+      YIELD()
 }
 
 /* some other task to signalize that FreeRTOS is alive */
 void vTask1(void *pvParameters) {
 
   while(1){
+    // toggle ^= 0xFF;
+    // *ptr = toggle;
     printk("Task1\n");
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }

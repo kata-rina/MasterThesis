@@ -37,7 +37,7 @@
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
 
-#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 250)
+#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 250*2)
 
 #define configTOTAL_HEAP_SIZE ( ( size_t ) ( 90 * 1024 ) )
 

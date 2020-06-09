@@ -368,7 +368,6 @@ BaseType_t xPortStartScheduler( void )
 {
 uint32_t ulAPSR;
 
-	printk("U xport star scheduler\n");
 	#if( configASSERT_DEFINED == 1 )
 	{
 		volatile uint32_t ulOriginalPriority;
@@ -431,8 +430,6 @@ uint32_t ulAPSR;
 			vPortRestoreTaskContext();
 		}
 	}
-
-	printk("ovdje ne bismo smjeli biti\n");
 
 	/* Will only get here if vTaskStartScheduler() was called with the CPU in
 	a non-privileged mode or the binary point register was not set to its lowest

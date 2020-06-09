@@ -127,7 +127,14 @@ extern uint32_t ulPortYieldRequired;			\
 }
 
 #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
-#define portYIELD() __asm volatile ( "SWI 0" );
+// #define portYIELD() __asm volatile ( "SWI 0" );
+
+#define portYIELD()\
+{												  \
+*((uint32_t*)0x0F8F01F00) = (2 << 24) | (0 << 0); \
+	__asm volatile (	"DSB		\n"			  \
+										"ISB		\n" );    \
+}
 
 
 /*-----------------------------------------------------------
@@ -245,4 +252,3 @@ number of bits implemented by the interrupt controller. */
 #define portICCRPR_RUNNING_PRIORITY_REGISTER 				( *( ( const volatile uint32_t * ) ( portINTERRUPT_CONTROLLER_CPU_INTERFACE_ADDRESS + portICCRPR_RUNNING_PRIORITY_OFFSET ) ) )
 
 #endif /* PORTMACRO_H */
-

@@ -56,7 +56,9 @@
 
 /** Type definition of the interrupt handler */
 typedef void (*handler)(void);
+
 void sFIQ_handler( uint32_t interrupt_ );
-// void sFIQ_handler( void );
+
 void install_interrupt( uint32_t interrupt_id, tHandler routine);
+
 #endif /* __S_ISR_H */
