@@ -83,6 +83,8 @@ uint32_t ltzvisor_hw_init(void){
 		return ret;
 	}
 	printk("      * GIC interface - OK  \n\t");
+
+	
 	/* Config Interrupts Security */
 	interrupt_security_configall();
 	interrupt_security_config(UART_1_INTERRUPT,Int_NS);
@@ -92,13 +94,13 @@ uint32_t ltzvisor_hw_init(void){
 	interrupt_security_config(GEM0_INTERRUPT,Int_NS);
 	interrupt_security_config(TTC0_TTCx_2_INTERRUPT,Int_S);
 	interrupt_security_config(GLOBAL_TIMER_IRQ, Int_NS);
+	interrupt_security_config(0, Int_S); // SGI interrupt for FreeRTOS
 
 	interrupt_target_set(GLOBAL_TIMER_IRQ,0,1);
 	interrupt_target_set(SCUTIMER_INTERRUPT,0,1);
 	interrupt_target_set(TTC1_TTCx_2_INTERRUPT,0,1);
 	interrupt_target_set(UART_1_INTERRUPT,0,1);
 
-	// interrupt_enable(TTC0_TTCx_2_INTERRUPT, TRUE);
 	interrupt_enable(SCUTIMER_INTERRUPT, TRUE);
 	interrupt_enable(GLOBAL_TIMER_IRQ, TRUE);
 

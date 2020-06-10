@@ -103,7 +103,7 @@ task.h is included from an application file. */
 	heap - probably so it can be placed in a special segment or address. */
 	extern uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
 #else
-	static uint8_t ucHeap[ configTOTAL_HEAP_SIZE ];
+	static uint8_t ucHeap[ configTOTAL_HEAP_SIZE ]__attribute((aligned(16)))__attribute__((section(".heap")));
 #endif /* configAPPLICATION_ALLOCATED_HEAP */
 
 /* Define the linked list structure.  This is used to link free blocks in order
@@ -475,4 +475,3 @@ uint8_t *puc;
 		mtCOVERAGE_TEST_MARKER();
 	}
 }
-

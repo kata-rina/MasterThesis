@@ -63,7 +63,9 @@ void sUndef_handler ( void );
 
 void sPrefetchAbort_handler( void );
 
-void sDataAbort_handler( void );
+void sDataAbort_handler( uint32_t dfsr, uint32_t spsr, uint32_t sctrl );
+
+void SGI_handler( void );
 
 void install_interrupt( uint32_t interrupt_id, tHandler routine);
 

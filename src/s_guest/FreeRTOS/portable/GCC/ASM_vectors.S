@@ -73,11 +73,9 @@
 .global DataAbortInterrupt
 .global PrefetchAbortInterrupt
 .global vPortInstallFreeRTOSVectorTable
-.global sFIQ_handler
 
 .extern FreeRTOS_IRQ_Handler
 .extern FreeRTOS_SWI_Handler
-@ .extern vTaskSwitchContext
 
 ulCriticalNestingC : .word ulCriticalNesting
 ulPortTaskHasFPUContextC : .word ulPortTaskHasFPUContext
@@ -85,98 +83,6 @@ pxCurrentTCBConst: .word pxCurrentTCB
 ulICCPMRConst: .word ulICCPMR
 ulMaxAPIPriorityMaskConst: .word ulMaxAPIPriorityMask
 vTaskSwitchContextConst : .word vTaskSwitchContext
-
-.set FIQ_MODE, 0x11
-.set SYS_MODE, 0x1f
-
-
-//==============================================================================
-.macro pSAVE_CONTEXT
-
-    /* Save the LR and SPSR onto the system mode stack before switching to
-    system mode to save the remaining system mode registers. */
-    SRSDB	sp!, #0x1f
-    PUSH {r8-r12,lr}
-    CPS		#0x1f
-    PUSH	{R0-R12, R14}
-
-    /* Push the critical nesting count. */
-    LDR		R2, ulCriticalNestingC
-    LDR		R1, [R2]
-    PUSH	{R1}
-
-    /* Does the task have a floating point context that needs saving?  If
-    ulPortTaskHasFPUContext is 0 then no. */
-    LDR		R2, ulPortTaskHasFPUContextC
-    LDR		R3, [R2]
-    CMP		R3, #0
-
-    /* Save the floating point context, if any. */
-    FMRXNE  R1,  FPSCR
-    VPUSHNE {D0-D15}
-    VPUSHNE	{D16-D31}
-    PUSHNE	{R1}
-
-    /* Save ulPortTaskHasFPUContext itself. */
-    PUSH	{R3}
-
-    /* Save the stack pointer in the TCB. */
-    LDR		R0, pxCurrentTCBConst
-    LDR		R1, [R0]
-    STR		SP, [R1]
-
-    .endm
-
-
-
-//==============================================================================
-
-.macro pRESTORE_CONTEXT
-
-	/* Set the SP to point to the stack of the task being restored. */
-	LDR		R0, pxCurrentTCBConst
-	LDR		R1, [R0]
-	LDR		SP, [R1]
-
-	/* Is there a floating point context to restore?  If the restored
-	ulPortTaskHasFPUContext is zero then no. */
-	LDR		R0, ulPortTaskHasFPUContextC
-	POP		{R1}
-	STR		R1, [R0]
-	CMP		R1, #0
-
-	/* Restore the floating point context, if any. */
-	POPNE 	{R0}
-	VPOPNE	{D16-D31}
-	VPOPNE	{D0-D15}
-	VMSRNE  FPSCR, R0
-
-	/* Restore the critical section nesting depth. */
-	LDR		R0, ulCriticalNestingC
-	POP		{R1}
-	STR		R1, [R0]
-
-	/* Ensure the priority mask is correct for the critical nesting depth. */
-	LDR		R2, ulICCPMRConst
-	LDR		R2, [R2]
-	CMP		R1, #0
-	MOVEQ	R4, #255
-	LDRNE	R4, ulMaxAPIPriorityMaskConst
-	LDRNE	R4, [R4]
-	STR		R4, [R2]
-
-	/* Restore all system mode registers other than the SP (which is already
-	being used). */
-	POP		{R0-R12, R14}
-
-	/* Return to the task code, loading CPSR on the way. */
-  CPS     #FIQ_MODE
-  POP     {r8-r12,lr}
-  CPS     #SYS_MODE
-	RFEIA	sp!
-
-	.endm
-
 
 //==============================================================================
 
@@ -202,8 +108,18 @@ _fiq:   .word FreeRTOS_IRQ_Handler
 
 _undef:   .word sUndef_handler
 _pabort:  .word sPrefetchAbort_handler
-_dabort:  .word sDataAbort_handler
+_dabort:  .word DataAbort
 
+.type DataAbort, %function
+DataAbort:
+  /* Read Data Fault Status Register */
+  mrc p15, 0, r0, c5, c0, 0
+  /* Read program status register*/
+  mrs r1, spsr
+  /* Read SCTRL */
+  mrc p15, 0, r2, c1, c0, 0
+
+  b   sDataAbort_handler
 
 .align 4
 .type vPortInstallFreeRTOSVectorTable, %function

@@ -174,8 +174,6 @@
 .endm
 
 
-
-
 /******************************************************************************
  * SVC handler is used to start the scheduler.
  *****************************************************************************/
@@ -200,7 +198,6 @@ vPortRestoreTaskContext:
 
 .extern sFIQ_handler
 
-.align 4
 .type FreeRTOS_IRQ_Handler, %function
 FreeRTOS_IRQ_Handler:
 	/* Return to the interrupted instruction. */
@@ -229,7 +226,7 @@ FreeRTOS_IRQ_Handler:
 	CMP		r0, #0
 	BNE		1f
 
-	BLX		sFIQ_handler
+	@ BLX		sFIQ_handler
 	/*	Clear interrupt */
 	LDR 	r4, ulICCEOIRConst
 	LDR		r4, [r4]

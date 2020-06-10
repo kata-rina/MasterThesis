@@ -49,9 +49,9 @@
 #define __LTZVISOR_SYSCALL_ASM
 
 /** SMC Identifiers for secure world functions */
-#define LTZVISOR_SCHED_SYSCALL		(0x0ffffff1)
-#define LTZVISOR_READ_SYSCALL		(-30)
-#define LTZVISOR_WRITE_SYSCALL		(-31)
+#define LTZVISOR_SCHED_SYSCALL		  (0x0ffffff1)
+#define LTZVISOR_READ_SYSCALL		    (-30)
+#define LTZVISOR_WRITE_SYSCALL	   	(-31)
 #define LTZVISOR_CP15_WRITE_SYSCALL (-32)
 
 #endif /* __LTZVISOR_SYSCALL_ASM */

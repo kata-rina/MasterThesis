@@ -199,6 +199,7 @@ uint32_t interrupt_interface_init(void){
 
 	/** Enable the CPU Interface */
 	cpu_inter->ICCICR = 0x00000009;
+
 	cpu_inter->ICCICR |= 0x00000002;
 
 	return TRUE;
@@ -317,6 +318,7 @@ void interrupt_security_configall(void){
 	/* Configure all global interrupts as NS Interrupts */
 	for(num_regs=1; num_regs < GIC_NUM_REGISTERS; num_regs++){
 		int_dist->ICDISRx[num_regs] = 0xFFFFFFFF;
+		int_dist->ICDIPRx[num_regs] = 0x80808080;
 	}
 }
 

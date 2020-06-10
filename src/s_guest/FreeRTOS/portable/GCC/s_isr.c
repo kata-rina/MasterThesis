@@ -90,8 +90,6 @@ void sUndef_handler ( void ){
 
 }
 
-
-
 void sPrefetchAbort_handler( void ){
 
 	printk("ERROR: Secure prefetch abort \n");
@@ -100,11 +98,28 @@ void sPrefetchAbort_handler( void ){
 }
 
 
-void sDataAbort_handler( void ){
+void sDataAbort_handler( uint32_t dfsr, uint32_t spsr, uint32_t sctrl ){
 
-	printk("ERROR: Secure data abort \n");
+	uint32_t addr;
+
+	asm volatile("push {lr}");
+	asm volatile ("sub r0, lr, #8");
+	asm volatile ("mov %0, r0" : "=r"(addr) ::);
+	printk("Abort at 0x%x\n", addr);
+
+	printk("Abort register: 0x%x\n", dfsr);
+	printk("SPSR register:	0x%x\n", spsr);
+	printk("SCTRL register: 0x%x\n", sctrl);
+
+	asm volatile("pop {lr}");
+	asm volatile("subs pc, lr, #8");
+
 	while(1);
 
+}
+
+void SGI_handler( void ){
+	printk("SGI handler\n");
 }
 
 /**

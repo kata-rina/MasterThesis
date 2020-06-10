@@ -83,9 +83,23 @@ __setup_CPU:
 	ldr  	r0, =0x00				@ Clear registers
 	mcr	p15, 0, r0, c1, c0, 1			@ Write ACTLR
 
-	@ /** Set secure vector table (VBAR) */
-	@ ldr	r0, =_secure_vector_table		@ Read the Secure Vector Table's Base Address
-	@ mcr	p15, 0, r0, c12, c0, 0			@ Write VBAR
+	/* Clear cp15 regs with reset values */
+	mov	r0, #0x0
+	mcr	p15, 0, r0, c5, c0, 0	/* DFSR */
+	mcr	p15, 0, r0, c5, c0, 1	/* IFSR */
+	mcr	p15, 0, r0, c6, c0, 0	/* DFAR */
+	mcr	p15, 0, r0, c6, c0, 2	/* IFAR */
+	mcr	p15, 0, r0, c9, c13, 2	/* PMXEVCNTR */
+	mcr	p15, 0, r0, c13, c0, 2	/* TPIDRURW */
+	mcr	p15, 0, r0, c13, c0, 3	/* TPIDRURO */
+
+	/* Reset and start Cycle Counter */
+	mov	r2, #0x80000000		/* clear overflow */
+	mcr	p15, 0, r2, c9, c12, 3
+	mov	r2, #0xd		/* D, C, E */
+	mcr	p15, 0, r2, c9, c12, 0
+	mov	r2, #0x80000000		/* enable cycle counter */
+	mcr	p15, 0, r2, c9, c12, 1
 
 	/** Set secure vector table (VBAR) */
 	ldr	r0, =_freertos_vector_table		@ Read the Secure Vector Table's Base Address

@@ -1045,6 +1045,7 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 }
 /*-----------------------------------------------------------*/
 
+
 #if ( INCLUDE_vTaskDelete == 1 )
 
 	void vTaskDelete( TaskHandle_t xTaskToDelete )
@@ -1056,7 +1057,6 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 			/* If null is passed in here then it is the calling task that is
 			being deleted. */
 			pxTCB = prvGetTCBFromHandle( xTaskToDelete );
-
 			/* Remove task from the ready list. */
 			if( uxListRemove( &( pxTCB->xStateListItem ) ) == ( UBaseType_t ) 0 )
 			{
@@ -1066,7 +1066,6 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 			{
 				mtCOVERAGE_TEST_MARKER();
 			}
-
 			/* Is the task waiting on an event also? */
 			if( listLIST_ITEM_CONTAINER( &( pxTCB->xEventListItem ) ) != NULL )
 			{
@@ -1082,7 +1081,6 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 			portPRE_TASK_DELETE_HOOK() as in the Windows port that macro will
 			not return. */
 			uxTaskNumber++;
-
 			if( pxTCB == pxCurrentTCB )
 			{
 				/* A task is deleting itself.  This cannot complete within the
@@ -1096,7 +1094,6 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 				there is a task that has been deleted and that it should therefore
 				check the xTasksWaitingTermination list. */
 				++uxDeletedTasksWaitingCleanUp;
-
 				/* The pre-delete hook is primarily for the Windows simulator,
 				in which Windows specific clean up operations are performed,
 				after which it is not possible to yield away from this task -
@@ -1108,12 +1105,10 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 			{
 				--uxCurrentNumberOfTasks;
 				prvDeleteTCB( pxTCB );
-
 				/* Reset the next expected unblock time in case it referred to
 				the task that has just been deleted. */
 				prvResetNextTaskUnblockTime();
 			}
-
 			traceTASK_DELETE( pxTCB );
 		}
 		taskEXIT_CRITICAL();

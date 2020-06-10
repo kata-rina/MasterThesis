@@ -9,7 +9,7 @@ void main ( void ){
 	/** Initialize hardware */
 	// hw_init();
 
-	printk(" * Secure bare metal VM: running AA ... \n\t");
+	printk(" * Secure bare metal VM: running ... \n\t");
 
 
 	// led_blink((void*)0);
