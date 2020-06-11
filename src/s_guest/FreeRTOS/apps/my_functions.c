@@ -25,9 +25,9 @@ void vApplicationIdleHook( void ) {
 void vTask1(void *pvParameters) {
 
   while(1){
-    // toggle ^= 0xFF;
-    // *ptr = toggle;
-    printk("Task1\n");
+    toggle ^= 0xFF;
+    *ptr = toggle;
+    // printk("Task1\n");
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

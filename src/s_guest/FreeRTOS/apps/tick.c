@@ -8,7 +8,6 @@ void vFreeRTOS_SetupTickInterrupt( void ){
 
 	interrupt_enable(TTC0_TTCx_2_INTERRUPT,TRUE);
 	interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
-	// interrupt_priority_set(TTC0_TTCx_2_INTERRUPT, 14 << (TTC0_TTCx_2_INTERRUPT % 32));
   interrupt_priority_set(TTC0_TTCx_2_INTERRUPT, 7);
 
 

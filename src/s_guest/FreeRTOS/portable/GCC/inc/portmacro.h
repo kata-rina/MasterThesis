@@ -131,8 +131,6 @@ extern uint32_t ulPortYieldRequired;			\
 #define portYIELD()\
 {												  \
 *((uint32_t*)0x0F8F01F00) = (2 << 24) | (0 << 0); \
-	__asm volatile (	"DSB		\n"			  \
-										"ISB		\n" );    \
 }
 
 

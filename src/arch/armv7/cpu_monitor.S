@@ -297,9 +297,15 @@ _mon_fiq_handler:
 
 	cps #MONITOR_MODE
 	mov sp, r0
-	pop {r0-r12}
 
-	rfefd sp!
+  pop {r1}
+  msr spsr, r1
+  pop {r0-r12, lr}
+  movs pc, lr
+
+  @ mov sp, r0
+	@ pop {r0-r12}
+	@ rfefd sp!
 
 /**
  *
@@ -322,9 +328,14 @@ board_smc:
 .globl _mon_scheduler
 _mon_scheduler:
 
-	srsfd sp!, #MONITOR_MODE
-	push {r0-r12}
-	mov r0, sp
+  push {r0-r12,lr}
+  mrs r1, spsr
+  push {r1}
+  mov r0, sp
+
+	@ srsfd sp!, #MONITOR_MODE
+	@ push {r0-r12}
+	@ mov r0, sp
 
 	cps #SUPERVISOR_MODE
 	mrs	 r1, spsr
