@@ -7,17 +7,19 @@
 
 #define configUSE_MUTEXES 1
 
-#define configUSE_RECURSIVE_MUTEXES 1
+#define configUSE_RECURSIVE_MUTEXES 0
 
 #define configUSE_COUNTING_SEMAPHORES 1
 
 #define configUSE_TIMERS 1
 
+#define configUSE_TIME_SLICING 1
+
 #define configUSE_IDLE_HOOK 1
 
 #define configUSE_TICK_HOOK 0
 
-#define configUSE_MALLOC_FAILED_HOOK 0
+#define configUSE_MALLOC_FAILED_HOOK 1
 
 #define configSUPPORT_STATIC_ALLOCATION 0
 
@@ -29,19 +31,20 @@
 
 #define configUSE_CO_ROUTINES 0
 
-#define configTICK_RATE_HZ (1)
+#define configTICK_RATE_HZ (2)
 
-#define configCPU_CLOCK_HZ 650000000L
+#define configCPU_CLOCK_HZ 650000000UL
 
 #define configPERIPHERAL_CLOCK_HZ  				( 33333000UL )
 
-#define configMAX_PRIORITIES (8)
+#define configMAX_PRIORITIES (7)
 
 #define configMAX_CO_ROUTINE_PRIORITIES 2
 
-#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 100)
+#define configMINIMAL_STACK_SIZE ( ( unsigned short ) 250)
 
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 8192 ) )
+// #define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*2 ) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 90 * 1024) )
 
 #define configMAX_TASK_NAME_LEN 10
 
@@ -49,23 +52,22 @@
 
 #define configTIMER_TASK_PRIORITY (configMAX_PRIORITIES - 1)
 
-#define configTIMER_QUEUE_LENGTH 5
+#define configTIMER_QUEUE_LENGTH 10
 
 #define configTIMER_TASK_STACK_DEPTH ((configMINIMAL_STACK_SIZE) * 2)
 
 #define configUSE_QUEUE_SETS 1
 
-// #define configCHECK_FOR_STACK_OVERFLOW 2
-#define configCHECK_FOR_STACK_OVERFLOW 0
+#define configCHECK_FOR_STACK_OVERFLOW 2
 
 
-#define configQUEUE_REGISTRY_SIZE 8
+#define configQUEUE_REGISTRY_SIZE 10
 
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 0
 
-#define configUSE_TICKLESS_IDLE	1
+#define configUSE_TICKLESS_IDLE	0
 #define configTASK_RETURN_ADDRESS    NULL
 #define INCLUDE_vTaskPrioritySet             1
 #define INCLUDE_uxTaskPriorityGet            1
@@ -77,9 +79,9 @@
 #define INCLUDE_eTaskGetState                1
 #define INCLUDE_xTimerPendFunctionCall       1
 #define INCLUDE_pcTaskGetTaskName            1
-#define configMAX_API_CALL_INTERRUPT_PRIORITY (18)
+#define configMAX_API_CALL_INTERRUPT_PRIORITY (1)
 
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
 
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F01000)
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( -0xf00 )

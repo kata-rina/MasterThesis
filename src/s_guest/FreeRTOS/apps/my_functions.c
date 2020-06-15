@@ -13,21 +13,35 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 void vApplicationIdleHook( void ) {
 
     /* call scheduler */
-      // cnt++;
-      // if(cnt == 50000){
-      //   cnt = 0;
-      // }
       YIELD();
+      asm volatile (	"dsb		\n"
+      					      "isb		\n" );
+}
 
+void vApplicationStackOverflowHook( TaskHandle_t xTask,
+                                    signed char *pcTaskName)
+{
+  *ptr = 0xAA;
+  printk("Stack overflow in %s\n", pcTaskName);
+}
+
+void vApplicationMallocFailedHook( void ){
+  *ptr = 0xEE;
+
+  printk("Malloc failed hook\n");
 }
 
 /* some other task to signalize that FreeRTOS is alive */
 void vTask1(void *pvParameters) {
 
   while(1){
-    toggle ^= 0xFF;
-    *ptr = toggle;
+    // toggle ^= 0xFF;
+    // *ptr = toggle;
     // printk("Task1\n");
+    cnt++;
+    if(cnt == 5000){
+      cnt = 0;
+    }
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

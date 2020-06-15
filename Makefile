@@ -21,8 +21,8 @@ export BOARD:= ZEDBOARD
 export S_GUEST:= FREERTOS
 export NS_GUEST:= BARE_METAL
 # export CROSS_COMPILE:= /mnt/Jupiter/FAKS/Diplomski/Diplomski_rad/linaro_toolchain/gcc-linaro-7.1.1-2017.08-x86_64_arm-eabi/bin/arm-eabi-
-# export CROSS_COMPILE := arm-linux-gnueabihf-
-export CROSS_COMPILE := arm-none-eabi-
+export CROSS_COMPILE := arm-linux-gnueabihf-
+# export CROSS_COMPILE := arm-none-eabi-
 export SDK_PATH = $(CURDIR)
 
 

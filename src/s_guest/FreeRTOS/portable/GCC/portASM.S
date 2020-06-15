@@ -226,7 +226,6 @@ FreeRTOS_IRQ_Handler:
 	CMP		r0, #0
 	BNE		1f
 
-	@ BLX		sFIQ_handler
 	/*	Clear interrupt */
 	LDR 	r4, ulICCEOIRConst
 	LDR		r4, [r4]
