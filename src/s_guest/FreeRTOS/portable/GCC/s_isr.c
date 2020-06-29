@@ -48,6 +48,7 @@
 #include <s_isr.h>
 #include <printk.h>
 #include <zynq_ttc.h>
+#include <zynq_spi.h>
 
 extern void FreeRTOS_Tick_Handler( void );
 
@@ -60,7 +61,7 @@ tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, ttc_interrupt_clear,
 	ttc_interrupt_clear, ttc_interrupt_clear, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, SPI_1_irq_handler, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL
 };
 

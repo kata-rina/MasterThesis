@@ -70,9 +70,10 @@ void hw_init( void ){
   /** Generate tick every 100 ms */
   tick_set(1000000);
 
-  // interrupt_enable(SPI_1_INTERRUPT,TRUE);
-  // interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
-  // interrupt_priority_set(SPI_1_INTERRUPT, 4);
+  /* setup interrupt for SPI 1 controller */
+  interrupt_enable(SPI_1_INTERRUPT,TRUE);
+  interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
+  interrupt_priority_set(SPI_1_INTERRUPT, 4);
 
 }
 

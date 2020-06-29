@@ -1,7 +1,7 @@
 #include<my_functions.h>
 #include<printk.h>
 #include<hw_zynq.h>
-
+#include<zynq_spi.h>
 void led_blink( void * pvParameters );
 
 void main ( void ){
@@ -11,8 +11,13 @@ void main ( void ){
 
 	printk(" * Secure bare metal VM: running ... \n\t");
 
+	/* Initialize SPI 1 controller */
+	SPI_1_Reset();
+	SPI_1_ClockEnable();
+	SPI_1_SignalRoute();
+	SPI_1_Config();
 
-	// led_blink((void*)0);
+	SPI_1_Enable();
 
   /* create one task */
   xTaskCreate(

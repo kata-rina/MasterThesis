@@ -83,7 +83,7 @@ uint32_t board_init(void){
 	/* QSPI slave security (NS) */
 	write32( (void *)SECURITY4_QSPI, 0x1);
 	/* APB slave security (NS) */
-	write32( (void *) SECURITY6_APBSL, 0x00007fff);
+	write32( (void *) SECURITY6_APBSL, 0x00007dff);
 	/* DMA slave security (S) */
 	write32( (void *)TZ_DMA_NS, 0x1);
 	write32( (void *)TZ_DMA_IRQ_NS, 0x0000ffff);
