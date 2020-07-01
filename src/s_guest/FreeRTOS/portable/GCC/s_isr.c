@@ -86,15 +86,17 @@ void sFIQ_handler( uint32_t interrupt_ ){
 
 void sUndef_handler ( void ){
 
-		printk("ERROR: Secure undefined \n");
-		while(1);
+		// printk("ERROR: Secure undefined \n");
+		// while(1);
+		asm volatile("movs pc, lr");
 
 }
 
 void sPrefetchAbort_handler( void ){
 
-	printk("ERROR: Secure prefetch abort \n");
-	while(1);
+	// printk("ERROR: Secure prefetch abort \n");
+	// while(1);
+	asm volatile("movs pc, lr");
 
 }
 

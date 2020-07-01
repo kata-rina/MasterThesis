@@ -11,5 +11,6 @@
 
 void vApplicationIdleHook( void );
 void vTask1( void *pvParameters);
+void vTaskReadSPIData(void *pvParameters);
 
 #endif

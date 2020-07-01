@@ -4,7 +4,8 @@
 #include <zynq_spi.h>
 #include <io.h>
 #include <board.h>
-
+uint32_t *led = (uint32_t *) 0x41200000;
+uint32_t tog = 0x00;
 /* buffer for storing incoming data from RX FIFO buffer in SPI controller */
 uint8_t RX_BUFFER[RX_BUFF_SIZE*2];
 uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
@@ -160,13 +161,13 @@ void SPI_1_Config(void){
       SPI_InitStruct->cr_register |= (uint32_t)CR_MODE_FAIL_EN;
 
       // do not initiate a transmission
-      SPI_InitStruct->cr_register |= (uint32_t)CR_MAN_START_AUTO;
+      // SPI_InitStruct->cr_register |= (uint32_t)CR_MAN_START_AUTO;
 
 
       // SPI_InitStruct->dr_register = (uint32_t)DR_AFTER_MASK;
 
       // manual chip select
-      // SPI_InitStruct->cr_register |= (uint32_t)CR_MAN_CS;
+      SPI_InitStruct->cr_register |= (uint32_t)CR_MAN_CS;
 
       // initiate RX FIFO BUFFER
       RX_BUFFER_HEAD = 0;
@@ -193,7 +194,7 @@ void SPI_1_Enable(void){
 
       /* enable the interrupts enable RX FIFO full RX FIFO overflow, TX FIFO
         empty and fault conditions 0x27 */
-      SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN;
+      SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN | IER_RX_NEMPTY_EN;
 
       // enable the controller
       SPI_Struct->er_register = (uint32_t)ER_SPI_ENABLE;
@@ -227,6 +228,8 @@ void SPI_1_Disable(void){
  * This function reads from the RX FIFO. */
 void SPI_1_irq_handler(uint32_t interrupt){
 
+      // tog ^= 0xFF;
+      // *led = tog;
       SPI_Zynq * SPI_Struct = (SPI_Zynq *) SPI1_BASE_ADDR;
       uint32_t irq_status;
       char rx_char, rx_head;
@@ -292,7 +295,7 @@ uint8_t SPI1_SendData(uint8_t data){
       uint32_t cs_mask = 0xFFFFC3FF;
       reg &= cs_mask;
 
-      SPI_Struct->cr_register = (uint32_t)reg | CR_CS_0;
+      SPI_Struct->cr_register = (uint32_t)(reg | CR_CS_0);
 
       // send data
       SPI_Struct->txd_register =(uint32_t) data;
@@ -314,7 +317,7 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint8_t ret = 0;
     uint8_t rx_char;
 
-    // wait();
+    wait();
 
     // disable spi interrupt
     SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |

@@ -297,7 +297,7 @@
 //==================================================================================
 //==================================================================================
 /* Treshold values for RX and TX FIFO buffers in the controller */
-#define RX_THRES_VAL        0x06
+#define RX_THRES_VAL        0x01
 #define TX_THRES_VAL        0x01
 
 

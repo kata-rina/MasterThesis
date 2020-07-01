@@ -58,22 +58,22 @@ extern tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED];
  */
 void hw_init( void ){
 
-  /** Initialize TTC1_2 as S Tick */
-  ttc_init(TTC0,TTCx_2,INTERVAL);
-
-  /** Config TTC1_2 ISR*/
-  interrupt_enable(TTC0_TTCx_2_INTERRUPT,TRUE);
-  // interrupt_enable(SPI_1_INTERRUPT,TRUE);
-  interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
-  interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,7);
-
-  /** Generate tick every 100 ms */
-  tick_set(1000000);
+  // /** Initialize TTC1_2 as S Tick */
+  // ttc_init(TTC0,TTCx_2,INTERVAL);
+  //
+  // /** Config TTC1_2 ISR*/
+  // interrupt_enable(TTC0_TTCx_2_INTERRUPT,TRUE);
+  // // interrupt_enable(SPI_1_INTERRUPT,TRUE);
+  // interrupt_target_set(TTC0_TTCx_2_INTERRUPT,0,1);
+  // interrupt_priority_set(TTC0_TTCx_2_INTERRUPT,7);
+  //
+  // /** Generate tick every 100 ms */
+  // tick_set(1000000);
 
   /* setup interrupt for SPI 1 controller */
   interrupt_enable(SPI_1_INTERRUPT,TRUE);
   interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
-  interrupt_priority_set(SPI_1_INTERRUPT, 4);
+  interrupt_priority_set(SPI_1_INTERRUPT, 1);
 
 }
 

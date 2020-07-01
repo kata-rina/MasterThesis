@@ -2,12 +2,13 @@
 #include<printk.h>
 #include<hw_zynq.h>
 #include<zynq_spi.h>
+
 void led_blink( void * pvParameters );
 
 void main ( void ){
 
 	/** Initialize hardware */
-	// hw_init();
+	hw_init();
 
 	printk(" * Secure bare metal VM: running ... \n\t");
 
@@ -23,6 +24,15 @@ void main ( void ){
   xTaskCreate(
     vTask1,
     (const signed char *)"TASK1",
+    configMINIMAL_STACK_SIZE,
+    NULL,
+    1,
+    NULL);
+
+	/* create another one */
+  xTaskCreate(
+    vTaskReadSPIData,
+    (const signed char *)"TASK2",
     configMINIMAL_STACK_SIZE,
     NULL,
     2,
