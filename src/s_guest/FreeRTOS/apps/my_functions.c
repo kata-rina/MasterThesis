@@ -18,8 +18,10 @@ void vApplicationIdleHook( void ) {
 
     /* call scheduler */
       YIELD();
+      // while(1);
       asm volatile (	"dsb		\n"
       					      "isb		\n" );
+
 }
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask,
@@ -38,15 +40,16 @@ void vApplicationMallocFailedHook( void ){
 void vTask1(void *pvParameters) {
 
   volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
-  uint8_t test = 0xBC;
-
   while(1){
-    SPI1_SendData(test);
+    SPI1_SendData(0xBC);
+    // SPI1_SendData(0xAC);
+
     // memcpy(data, &test, sizeof(test));
 
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }
+
 
 /* task for reading data received from SPI peripheral */
 void vTaskReadSPIData(void *pvParameters){
@@ -56,6 +59,7 @@ void vTaskReadSPIData(void *pvParameters){
   while(1){
     flush_icache_and_dcache();
     SPI1_ReadData(&recv);
+    // printk("Received: %x\n", recv);
     if (recv == 0xBC){
       *ptr = 0x11;
     }

@@ -228,14 +228,13 @@ void SPI_1_Disable(void){
  * This function reads from the RX FIFO. */
 void SPI_1_irq_handler(uint32_t interrupt){
 
-      // tog ^= 0xFF;
-      // *led = tog;
+      tog ^= 0xFF;
+      *led = tog;
       SPI_Zynq * SPI_Struct = (SPI_Zynq *) SPI1_BASE_ADDR;
       uint32_t irq_status;
       char rx_char, rx_head;
       uint32_t read;
 
-      // printk("u interruptu\n");
       // disable all interrupts except TX FIFO FULL and RX FIFO NOT EMPTY
       SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_RXFULL_DIS);
 
@@ -317,7 +316,7 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint8_t ret = 0;
     uint8_t rx_char;
 
-    wait();
+    // wait();
 
     // disable spi interrupt
     SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |

@@ -3,8 +3,6 @@
 #include<hw_zynq.h>
 #include<zynq_spi.h>
 
-void led_blink( void * pvParameters );
-
 void main ( void ){
 
 	/** Initialize hardware */
@@ -40,16 +38,4 @@ void main ( void ){
 
   vTaskStartScheduler();
 
-}
-
-void led_blink( void * parameters ){
-
-	// static uint32_t toggle;
-	/** 4GPIO (LED) in FPGA fabric */
-	// static uint32_t *ptr = (uint32_t *) 0x41200000;
-	uint32_t i = 0;
-	for( ;; ){
-			// printk("led blink\n");
-			YIELD();
-		}
 }

@@ -31,7 +31,7 @@
 
 #define configUSE_CO_ROUTINES 0
 
-#define configTICK_RATE_HZ (2)
+#define configTICK_RATE_HZ (1)
 
 #define configCPU_CLOCK_HZ 650000000UL
 
