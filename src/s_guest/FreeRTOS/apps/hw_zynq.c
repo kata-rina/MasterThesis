@@ -45,7 +45,7 @@
 */
 
 #include<hw_zynq.h>
-#include<zynq_spi.h>
+#include<spi.h>
 
 extern tHandler* sfiq_handlers[NO_OF_INTERRUPTS_IMPLEMENTED];
 

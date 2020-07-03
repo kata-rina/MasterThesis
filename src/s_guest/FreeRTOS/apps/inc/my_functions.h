@@ -10,7 +10,7 @@
 #include<printk.h>
 
 void vApplicationIdleHook( void );
-void vTask1( void *pvParameters);
+void vTaskSendSPIData(void *pvParameters);
 void vTaskReadSPIData(void *pvParameters);
 
 #endif

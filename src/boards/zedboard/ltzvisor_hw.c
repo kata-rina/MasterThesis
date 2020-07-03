@@ -31,7 +31,7 @@
 */
 
 #include <ltzvisor_hw.h>
-#include <zynq_spi.h>
+#include <spi.h>
 #define SCUTIMER_INTERRUPT		(29)
 #define GEM0_INTERRUPT				54
 #define GLOBAL_TIMER_IRQ			27
@@ -96,7 +96,7 @@ uint32_t ltzvisor_hw_init(void){
 	interrupt_security_config(GLOBAL_TIMER_IRQ, Int_NS);
 	interrupt_security_config(0, Int_S); // SGI interrupt for FreeRTOS
 	interrupt_security_config(SPI_1_INTERRUPT, Int_S);
-	
+
 	interrupt_target_set(GLOBAL_TIMER_IRQ,0,1);
 	interrupt_target_set(SCUTIMER_INTERRUPT,0,1);
 	interrupt_target_set(TTC1_TTCx_2_INTERRUPT,0,1);

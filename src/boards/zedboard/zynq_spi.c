@@ -7,7 +7,7 @@
 uint32_t *led = (uint32_t *) 0x41200000;
 uint32_t tog = 0x00;
 /* buffer for storing incoming data from RX FIFO buffer in SPI controller */
-uint8_t RX_BUFFER[RX_BUFF_SIZE*2];
+volatile uint8_t RX_BUFFER[RX_BUFF_SIZE*2];
 uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
 
 
@@ -259,6 +259,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
         while (entries < RX_THRES_VAL){
           read = SPI_Struct->rxd_register;
+          printk("Read:%x\n", read);
 
           entries++;
 
@@ -269,6 +270,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
           if (rx_head != RX_BUFFER_TAIL){
                 RX_BUFFER[RX_BUFFER_HEAD] = (uint8_t)read;
                 RX_BUFFER_HEAD = rx_head; // update head
+
           }
         }
       }

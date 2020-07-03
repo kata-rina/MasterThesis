@@ -3,7 +3,7 @@
 #include <FreeRTOS.h>
 #include <portmacro.h>
 #include <string.h>
-#include <zynq_spi.h>
+#include <spi.h>
 #include <printk.h>
 
 extern void flush_icache_and_dcache(void);
@@ -17,10 +17,10 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 void vApplicationIdleHook( void ) {
 
     /* call scheduler */
-      YIELD();
-      // while(1);
-      asm volatile (	"dsb		\n"
-      					      "isb		\n" );
+      // YIELD();
+      while(1);
+      // asm volatile (	"dsb		\n"
+      					      // "isb		\n" );
 
 }
 
@@ -37,12 +37,13 @@ void vApplicationMallocFailedHook( void ){
 
 
 /* some other task to signalize that FreeRTOS is alive */
-void vTask1(void *pvParameters) {
+void vTaskSendSPIData(void *pvParameters) {
 
   volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
   while(1){
+    printk("Send\n");
     SPI1_SendData(0xBC);
-    // SPI1_SendData(0xAC);
+    SPI1_SendData(0xAC);
 
     // memcpy(data, &test, sizeof(test));
 
@@ -59,7 +60,7 @@ void vTaskReadSPIData(void *pvParameters){
   while(1){
     flush_icache_and_dcache();
     SPI1_ReadData(&recv);
-    // printk("Received: %x\n", recv);
+    printk("Received: %x\n", recv);
     if (recv == 0xBC){
       *ptr = 0x11;
     }

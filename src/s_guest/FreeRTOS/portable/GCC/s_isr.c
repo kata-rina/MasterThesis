@@ -48,7 +48,7 @@
 #include <s_isr.h>
 #include <printk.h>
 #include <zynq_ttc.h>
-#include <zynq_spi.h>
+#include <spi.h>
 
 extern void FreeRTOS_Tick_Handler( void );
 
