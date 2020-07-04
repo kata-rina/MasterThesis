@@ -29,25 +29,6 @@ void main ( void ){
 
 			xSemaphoreTake(xSemaphoreSPI, 0);
 
-			/* create task for deferred interrupt handling*/
-			xTaskCreate(
-				vTaskDeferredSPI_ISR,
-				(const signed char *)"spi_irq_task",
-				configMINIMAL_STACK_SIZE,
-				NULL,
-				1,
-				NULL);
-
-		  /* create task for sending SPI data and signalizing that
-			 	 FreeRTOS is alive */
-		  xTaskCreate(
-		    vTaskSendSPIData,
-		    (const signed char *)"SEND_spi",
-		    configMINIMAL_STACK_SIZE,
-		    NULL,
-		    3,
-		    NULL);
-
 			/* create task for reading SPI data stored in system memory */
 		  xTaskCreate(
 		    vTaskReadSPIData,
@@ -57,12 +38,33 @@ void main ( void ){
 		    2,
 		    NULL);
 
+			/* create task for sending SPI data and signalizing that
+			 	 FreeRTOS is alive */
+		  xTaskCreate(
+		    vTaskSendSPIData,
+		    (const signed char *)"SEND_spi",
+		    configMINIMAL_STACK_SIZE,
+		    NULL,
+		    1,
+		    NULL);
+
+			// /* create task for deferred interrupt handling*/
+			// xTaskCreate(
+			// 	vTaskDeferredSPI_ISR,
+			// 	(const signed char *)"spi_irq_task",
+			// 	configMINIMAL_STACK_SIZE,
+			// 	NULL,
+			// 	3,
+			// 	NULL);
+
+
+
 			/* Start scheduler*/
 		  vTaskStartScheduler();
 	}
 
-	printk("ERROR\n");
 
 	/* this point should not be reached */
+	printk("ERROR\n");
 	while(1);
 }

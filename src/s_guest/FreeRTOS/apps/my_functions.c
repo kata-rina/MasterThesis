@@ -1,12 +1,15 @@
 #include <my_functions.h>
 #include <printk.h>
 #include <FreeRTOS.h>
+#include<semphr.h>
 #include <portmacro.h>
 #include <string.h>
 #include <spi.h>
 #include <printk.h>
 
 extern void flush_icache_and_dcache(void);
+extern SemaphoreHandle_t xSemaphoreSPI;
+
 
 static uint32_t toggle = 0x00;
 /** 4GPIO (LED) in FPGA fabric */
@@ -41,9 +44,8 @@ void vTaskSendSPIData(void *pvParameters) {
 
   volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
   while(1){
-    printk("Send\n");
-    SPI1_SendData(0xBC);
     SPI1_SendData(0xAC);
+    SPI1_SendData(0xBC);
 
     // memcpy(data, &test, sizeof(test));
 
@@ -55,18 +57,17 @@ void vTaskSendSPIData(void *pvParameters) {
 /* task for reading data received from SPI peripheral */
 void vTaskReadSPIData(void *pvParameters){
 
-  uint8_t recv;
+  volatile uint8_t recv;
 
   while(1){
+
+    xSemaphoreTake(xSemaphoreSPI, portMAX_DELAY);
     flush_icache_and_dcache();
     SPI1_ReadData(&recv);
     printk("Received: %x\n", recv);
-    if (recv == 0xBC){
-      *ptr = 0x11;
-    }
-    else{
-      *ptr = 0x00;
-    }
+    xSemaphoreGive(xSemaphoreSPI);
+
+    // xSemaphoreGive(xSemaphoreSPI);
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

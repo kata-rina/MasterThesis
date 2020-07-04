@@ -15,7 +15,7 @@ uint32_t tog = 0x00;
 
 
 /* buffer for storing incoming data from RX FIFO buffer in SPI controller */
-volatile uint8_t RX_BUFFER[RX_BUFF_SIZE*2];
+uint8_t RX_BUFFER[RX_BUFF_SIZE];
 uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
 
 
@@ -23,7 +23,7 @@ uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
 static SPI_Zynq * SPI_Struct = (SPI_Zynq *) SPI1_BASE_ADDR;
 
 
-/* Binary semaphore created in main.c for managing SPI read operation*/
+/* Binary semaphore created in main.c for managing SPI read operation */
 extern SemaphoreHandle_t xSemaphoreSPI;
 
 
@@ -229,21 +229,74 @@ void SPI_1_Disable(void){
  * This function reads from the RX FIFO. */
 void SPI_1_irq_handler(uint32_t interrupt){
 
+      uint32_t irq_status;
+      char rx_char, rx_head;
+      uint32_t read;
+      BaseType_t xHigherPriorityTaskWoken;
 
-  interrupt_clear(81, 0);
+      /* First take semaphore and then process the interrupt */
+      xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
 
-  BaseType_t xHigherPriorityTaskWoken;
+      /* Do neccessary work here and unblock semaphore */
 
-  /* The xHigherPriorityTaskWoken must be initialized to pdFALSE as it
-  will get get set to pdTRUE inside the interrupt safe API function if
-  a context switch is required. */
-  xHigherPriorityTaskWoken = pdFALSE;
+      // disable all interrupts except TX FIFO FULL and RX FIFO NOT EMPTY
+      SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_RXFULL_DIS);
 
-  /* Give the semaphore to unblock the task */
-  xSemaphoreGiveFromISR( xSemaphoreSPI, &xHigherPriorityTaskWoken );
+      // determine the source of the interrupt - read from status register
+      irq_status = (SPI_Struct->sr_register);
 
-  /*Context switch will be performed if xHigherPriorityTaskWoken = pdTRUE */
-  portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
+      /* clear the interrupts : write 1s to the interrupt status register */
+
+      /* clear TX FIFO FULL interrupt */
+      if ( irq_status & SR_TX_FULL )  SPI_Struct->sr_register |=  (uint32_t)SR_TX_FULL;
+      /* clear RX overflow interrupt */
+      if ( irq_status & SR_RXOVR_YES ) SPI_Struct->sr_register |=  (uint32_t)SR_RXOVR_YES;
+      /* clear ModeFail interrupt */
+      if ( irq_status & SR_MODEF_YES ) SPI_Struct->sr_register |=  (uint32_t)SR_MODEF_YES;
+      /* clear TX FIFO underflow interrupt*/
+      if ( irq_status & SR_TX_UF ) SPI_Struct->sr_register |=  (uint32_t)SR_TX_UF;
+
+
+
+      // RX event
+      // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
+      while((SPI_Struct->sr_register & SR_RX_NEMPTY) | (SPI_Struct->sr_register & SR_RX_FULL)){
+        // uint8_t entries = 0;
+
+        // while (entries < RX_THRES_VAL){
+          read = SPI_Struct->rxd_register;
+
+          // entries++;
+
+          // check for buffer overrun
+          rx_head = RX_BUFFER_HEAD + 1;
+          if (rx_head == RX_BUFF_SIZE) rx_head = 0;
+
+          if (rx_head != RX_BUFFER_TAIL){
+                RX_BUFFER[RX_BUFFER_HEAD] = (uint8_t)read;
+                RX_BUFFER_HEAD = rx_head; // update head
+
+          }
+        }
+      // }
+
+      // enable interrupts
+      SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
+                                 IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+
+
+      /* The xHigherPriorityTaskWoken must be initialized to pdFALSE as it
+      will get get set to pdTRUE inside the interrupt safe API function if
+      a context switch is required. */
+      xHigherPriorityTaskWoken = pdFALSE;
+      //
+      //
+      /* Give the semaphore to unblock the task */
+      xSemaphoreGiveFromISR( xSemaphoreSPI, &xHigherPriorityTaskWoken );
+      //
+      //
+      // /*Context switch will be performed if xHigherPriorityTaskWoken = pdTRUE */
+      portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 
 }
 
@@ -280,20 +333,25 @@ uint8_t SPI1_ReadData(uint8_t *data){
 
 
     uint8_t ret = 0;
+    uint32_t i;
     uint8_t rx_char;
 
     // wait();
 
     // disable spi interrupt
-    SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
-                                IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
+    // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
+    //                             IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
 
     // fetch data from RX buffer
     if (RX_BUFFER_HEAD != RX_BUFFER_TAIL){
 
         *data = RX_BUFFER[RX_BUFFER_TAIL];
         RX_BUFFER_TAIL++;
-        if (RX_BUFFER_TAIL == RX_BUFF_SIZE) RX_BUFFER_TAIL = 0;
+        if (RX_BUFFER_TAIL == RX_BUFF_SIZE){
+          RX_BUFFER_TAIL = 0;
+        }
+
+
         ret = 1;
 
     }
@@ -302,8 +360,8 @@ uint8_t SPI1_ReadData(uint8_t *data){
     SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
 
     // enable interrupt
-    SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-                               IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+    // SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
+    //                            IER_RX_NEMPTY_EN | IER_RXFULL_EN);
 
     return ret;
 }
@@ -336,66 +394,3 @@ void SPI1_deassert_slave(void){
  * to circular buffer in memory. If you want to make sure that this task
  * executes right after SPI interrupt is triggered then this task must have
  * higher priority than any other task. */
-
-void vTaskDeferredSPI_ISR(void *pvParameters){
-
-  uint32_t irq_status;
-  char rx_char, rx_head;
-  uint32_t read;
-
-  while(1){
-
-        /* Use semaphore to wait for the event - this is blocking function*/
-        xSemaphoreTake(xSemaphoreSPI, portMAX_DELAY);
-
-        tog ^= 0xFF;
-        *led = tog;
-
-        // disable all interrupts except TX FIFO FULL and RX FIFO NOT EMPTY
-        // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_RXFULL_DIS);
-
-        // determine the source of the interrupt - read from status register
-        irq_status = (SPI_Struct->sr_register);
-
-        /* clear the interrupts : write 1s to the interrupt status register */
-
-        /* clear TX FIFO FULL interrupt */
-        if ( irq_status & SR_TX_FULL )  SPI_Struct->sr_register |=  (uint32_t)SR_TX_FULL;
-        /* clear RX overflow interrupt */
-        if ( irq_status & SR_RXOVR_YES ) SPI_Struct->sr_register |=  (uint32_t)SR_RXOVR_YES;
-        /* clear ModeFail interrupt */
-        if ( irq_status & SR_MODEF_YES ) SPI_Struct->sr_register |=  (uint32_t)SR_MODEF_YES;
-        /* clear TX FIFO underflow interrupt*/
-        if ( irq_status & SR_TX_UF ) SPI_Struct->sr_register |=  (uint32_t)SR_TX_UF;
-
-        // RX event
-        // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
-        if((SPI_Struct->sr_register & SR_RX_NEMPTY)){
-          uint8_t entries = 0;
-
-          while (entries < RX_THRES_VAL){
-            read = SPI_Struct->rxd_register;
-            printk("Read:%x\n", read);
-
-            entries++;
-
-            // check for buffer overrun
-            rx_head = RX_BUFFER_HEAD + 1;
-            if (rx_head == RX_BUFF_SIZE) rx_head = 0;
-
-            if (rx_head != RX_BUFFER_TAIL){
-                  RX_BUFFER[RX_BUFFER_HEAD] = (uint8_t)read;
-                  RX_BUFFER_HEAD = rx_head; // update head
-
-            }
-          }
-        }
-
-
-  // enable interrupts
-  // SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-  //                            IER_RX_NEMPTY_EN | IER_RXFULL_EN);
-
-  }
-
-}

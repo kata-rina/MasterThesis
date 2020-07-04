@@ -179,9 +179,11 @@ uint32_t interrupt_interface_init(void){
 	// cpu_inter->ICCPMR = 0x000000F0;
 	cpu_inter->ICCPMR = 0x000000FF;
 
-	/** All priority bits are compared for pre-emption */
+	/** All priority bits are compared for pre-emption -> value of this register must be zero then ?? */
 	// cpu_inter->ICCBPR = 0x00000003;
 	cpu_inter->ICCBPR = 0x00000002;
+	cpu_inter->ICCBPR = 0x00000000;
+
 
 	/** Clear any pending interrupts */
 	for( ; ; ){

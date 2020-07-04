@@ -8,7 +8,7 @@
 #define SPI_NUM               2
 
 /* RX FIFO has capacity of 128 bytes */
-#define RX_BUFF_SIZE          128
+#define RX_BUFF_SIZE          50
 
 //================================================================================
 /* AMBA Peripheral Clock Control Register */
@@ -358,7 +358,6 @@ void SPI1_assert_slave(uint8_t slave_nmr);
 
 void SPI1_deassert_slave(void);
 
-void vTaskDeferredSPI_ISR(void *pvParameters);
 
 
 #endif
