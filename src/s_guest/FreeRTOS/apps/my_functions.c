@@ -1,7 +1,7 @@
 #include <my_functions.h>
 #include <printk.h>
 #include <FreeRTOS.h>
-#include<semphr.h>
+#include <semphr.h>
 #include <portmacro.h>
 #include <string.h>
 #include <spi.h>
@@ -45,6 +45,7 @@ void vTaskSendSPIData(void *pvParameters) {
   volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
   while(1){
     SPI1_SendData(0xAC);
+
     SPI1_SendData(0xBC);
 
     // memcpy(data, &test, sizeof(test));
@@ -66,8 +67,6 @@ void vTaskReadSPIData(void *pvParameters){
     SPI1_ReadData(&recv);
     printk("Received: %x\n", recv);
     xSemaphoreGive(xSemaphoreSPI);
-
-    // xSemaphoreGive(xSemaphoreSPI);
     vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

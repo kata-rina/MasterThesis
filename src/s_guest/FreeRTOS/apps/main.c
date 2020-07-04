@@ -27,6 +27,7 @@ void main ( void ){
 	/* Check whether semaphore was created successfully */
 	if ( xSemaphoreSPI != NULL){
 
+			/* Take the semaphore for the first time */
 			xSemaphoreTake(xSemaphoreSPI, 0);
 
 			/* create task for reading SPI data stored in system memory */

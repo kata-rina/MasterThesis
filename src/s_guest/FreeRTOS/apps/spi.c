@@ -6,6 +6,7 @@
 #include <io.h>
 #include <board.h>
 #include <FreeRTOS.h>
+#include <queue.h>
 #include <semphr.h>
 
 
@@ -14,17 +15,16 @@ uint32_t *led = (uint32_t *) 0x41200000;
 uint32_t tog = 0x00;
 
 
-/* buffer for storing incoming data from RX FIFO buffer in SPI controller */
-uint8_t RX_BUFFER[RX_BUFF_SIZE];
-uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
-
-
 /* SPI 1 controller structure */
 static SPI_Zynq * SPI_Struct = (SPI_Zynq *) SPI1_BASE_ADDR;
 
 
 /* Binary semaphore created in main.c for managing SPI read operation */
 extern SemaphoreHandle_t xSemaphoreSPI;
+
+
+/* The SPI RX queue into which received bytes are placed. */
+static QueueHandle_t xRxQueue = NULL;
 
 
 /* little function for delay */
@@ -178,15 +178,13 @@ void SPI_1_Config(void){
       // manual chip select
       SPI_Struct->cr_register |= (uint32_t)CR_MAN_CS;
 
-      // initiate RX FIFO BUFFER
-      RX_BUFFER_HEAD = 0;
-      RX_BUFFER_TAIL = 0;
-
-
       // set RX and TX FIFO treshold values
       // RX FIFO treshold and TX FIFO treshold set to one byte
       SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
       SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
+
+      /* Create the queue used to hold received characters.  */
+      xRxQueue = xQueueCreate( RX_QUEUE_SIZE, sizeof( char ) );
 
       return;
 }
@@ -232,7 +230,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
       uint32_t irq_status;
       char rx_char, rx_head;
       uint32_t read;
-      BaseType_t xHigherPriorityTaskWoken;
+      BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
       /* First take semaphore and then process the interrupt */
       xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
@@ -261,40 +259,23 @@ void SPI_1_irq_handler(uint32_t interrupt){
       // RX event
       // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
       while((SPI_Struct->sr_register & SR_RX_NEMPTY) | (SPI_Struct->sr_register & SR_RX_FULL)){
-        // uint8_t entries = 0;
 
-        // while (entries < RX_THRES_VAL){
           read = SPI_Struct->rxd_register;
 
-          // entries++;
-
-          // check for buffer overrun
-          rx_head = RX_BUFFER_HEAD + 1;
-          if (rx_head == RX_BUFF_SIZE) rx_head = 0;
-
-          if (rx_head != RX_BUFFER_TAIL){
-                RX_BUFFER[RX_BUFFER_HEAD] = (uint8_t)read;
-                RX_BUFFER_HEAD = rx_head; // update head
-
-          }
+          /* Store received data to queue */
+          xQueueSendFromISR( xRxQueue, &read, &xHigherPriorityTaskWoken );
         }
-      // }
+
 
       // enable interrupts
       SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
                                  IER_RX_NEMPTY_EN | IER_RXFULL_EN);
 
 
-      /* The xHigherPriorityTaskWoken must be initialized to pdFALSE as it
-      will get get set to pdTRUE inside the interrupt safe API function if
-      a context switch is required. */
-      xHigherPriorityTaskWoken = pdFALSE;
-      //
-      //
       /* Give the semaphore to unblock the task */
       xSemaphoreGiveFromISR( xSemaphoreSPI, &xHigherPriorityTaskWoken );
-      //
-      //
+
+
       // /*Context switch will be performed if xHigherPriorityTaskWoken = pdTRUE */
       portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 
@@ -336,25 +317,13 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint32_t i;
     uint8_t rx_char;
 
-    // wait();
-
     // disable spi interrupt
     // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
     //                             IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
 
-    // fetch data from RX buffer
-    if (RX_BUFFER_HEAD != RX_BUFFER_TAIL){
 
-        *data = RX_BUFFER[RX_BUFFER_TAIL];
-        RX_BUFFER_TAIL++;
-        if (RX_BUFFER_TAIL == RX_BUFF_SIZE){
-          RX_BUFFER_TAIL = 0;
-        }
-
-
-        ret = 1;
-
-    }
+    /* Desqueue data from memory*/
+    xQueueReceive( xRxQueue, data, 0 );
 
     // de-assert all chip selects
     SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
@@ -387,10 +356,3 @@ void SPI1_deassert_slave(void){
 
   return;
 }
-
-//==============================================================================
-/* This is function for deffered interrupt handling for SPI peripheral:
- * Function reads data from rx buffer in SPI1 controller and stores data
- * to circular buffer in memory. If you want to make sure that this task
- * executes right after SPI interrupt is triggered then this task must have
- * higher priority than any other task. */
