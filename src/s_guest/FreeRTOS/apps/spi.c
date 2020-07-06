@@ -23,8 +23,9 @@ static SPI_Zynq * SPI_Struct = (SPI_Zynq *) SPI1_BASE_ADDR;
 extern SemaphoreHandle_t xSemaphoreSPI;
 
 
-/* The SPI RX queue into which received bytes are placed. */
-static QueueHandle_t xRxQueue = NULL;
+/* buffer for storing incoming data from RX FIFO buffer in SPI controller */
+uint8_t RX_BUFFER[RX_BUFF_SIZE];
+uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
 
 
 /* little function for delay */
@@ -148,6 +149,7 @@ void SPI_1_SignalRoute(void){
  */
 void SPI_1_Config(void){
 
+      uint8_t i;
       // first reset control register
       SPI_Struct->cr_register = (uint32_t)CR_RESET;
 
@@ -183,8 +185,13 @@ void SPI_1_Config(void){
       SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
       SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
 
-      /* Create the queue used to hold received characters.  */
-      xRxQueue = xQueueCreate( RX_QUEUE_SIZE, sizeof( char ) );
+      /* init buffer for storing incoming data from RX FIFO buffer in SPI controller */
+      RX_BUFFER_HEAD = 0;
+      RX_BUFFER_TAIL = 0;
+
+      for(i = 0; i < RX_BUFF_SIZE; i++){
+        RX_BUFFER[i]  = 0;
+      }
 
       return;
 }
@@ -229,11 +236,11 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
       uint32_t irq_status;
       char rx_char, rx_head;
-      uint32_t read;
+      uint8_t read;
       BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
       /* First take semaphore and then process the interrupt */
-      xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
+      // xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
 
       /* Do neccessary work here and unblock semaphore */
 
@@ -258,12 +265,19 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
       // RX event
       // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
-      while((SPI_Struct->sr_register & SR_RX_NEMPTY) | (SPI_Struct->sr_register & SR_RX_FULL)){
+      while((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
 
           read = SPI_Struct->rxd_register;
 
-          /* Store received data to queue */
-          xQueueSendFromISR( xRxQueue, &read, &xHigherPriorityTaskWoken );
+          // check for buffer overrun
+          rx_head = RX_BUFFER_HEAD + 1;
+          if (rx_head == RX_BUFF_SIZE) rx_head = 0;
+
+          if (rx_head != RX_BUFFER_TAIL){
+                RX_BUFFER[RX_BUFFER_HEAD] = read;
+                RX_BUFFER_HEAD = rx_head; // update head
+
+          }
         }
 
 
@@ -318,19 +332,33 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint8_t rx_char;
 
     // disable spi interrupt
-    // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
-    //                             IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
+    SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
+                                IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
 
 
-    /* Desqueue data from memory*/
-    xQueueReceive( xRxQueue, data, 0 );
+    // fetch data from RX buffer
+    if (RX_BUFFER_HEAD != RX_BUFFER_TAIL){
+
+        *data = RX_BUFFER[RX_BUFFER_TAIL];
+        RX_BUFFER_TAIL++;
+        if (RX_BUFFER_TAIL == RX_BUFF_SIZE){
+          RX_BUFFER_TAIL = 0;
+          for (i=0; i < RX_BUFF_SIZE; i++){
+            printk("Buffer[%d] = %x\n", i, RX_BUFFER[i]);
+          }
+        }
+
+
+        ret = 1;
+
+    }
 
     // de-assert all chip selects
     SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
 
     // enable interrupt
-    // SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-    //                            IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+    SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
+                               IER_RX_NEMPTY_EN | IER_RXFULL_EN);
 
     return ret;
 }

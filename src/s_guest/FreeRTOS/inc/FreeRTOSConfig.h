@@ -31,7 +31,7 @@
 
 #define configUSE_CO_ROUTINES 0
 
-#define configTICK_RATE_HZ (1)
+#define configTICK_RATE_HZ (2)
 
 #define configCPU_CLOCK_HZ 650000000UL
 
@@ -43,8 +43,8 @@
 
 #define configMINIMAL_STACK_SIZE ( ( unsigned short ) 250)
 
-// #define configTOTAL_HEAP_SIZE ( ( size_t ) ( 65536*2 ) )
-#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 90 * 1024) )
+#define configTOTAL_HEAP_SIZE ( ( size_t ) ( 8192 ) )
+// #define configTOTAL_HEAP_SIZE ( ( size_t ) ( 95 * 1024) )
 
 #define configMAX_TASK_NAME_LEN 10
 
@@ -66,6 +66,7 @@
 #define configUSE_STATS_FORMATTING_FUNCTIONS 1
 
 #define configNUM_THREAD_LOCAL_STORAGE_POINTERS 0
+#define configUSE_TASK_FPU_SUPPORT 1
 
 #define configUSE_TICKLESS_IDLE	0
 #define configTASK_RETURN_ADDRESS    NULL
@@ -86,8 +87,7 @@
 #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F01000)
 #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( -0xf00 )
 
-// #define configINTERRUPT_CONTROLLER_BASE_ADDRESS         ( 0xF8F00000)
-// #define configINTERRUPT_CONTROLLER_CPU_INTERFACE_OFFSET ( 0x0100 )
+
 #define configUNIQUE_INTERRUPT_PRIORITIES                32
 #define configEOI_ADDRESS                               ( 0xF8F00110 )
 

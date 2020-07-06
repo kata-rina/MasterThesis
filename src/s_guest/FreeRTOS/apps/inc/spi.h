@@ -8,7 +8,7 @@
 #define SPI_NUM               2
 
 /* RX FIFO has capacity of 128 bytes */
-#define RX_QUEUE_SIZE          50
+#define RX_BUFF_SIZE          20
 
 //================================================================================
 /* AMBA Peripheral Clock Control Register */

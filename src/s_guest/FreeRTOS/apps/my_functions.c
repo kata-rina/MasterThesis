@@ -45,12 +45,13 @@ void vTaskSendSPIData(void *pvParameters) {
   volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
   while(1){
     SPI1_SendData(0xAC);
-
-    SPI1_SendData(0xBC);
-
     // memcpy(data, &test, sizeof(test));
 
-    vTaskDelay( 1000 / portTICK_RATE_MS);
+    vTaskDelay( 500 / portTICK_RATE_MS);
+    SPI1_SendData(0xBC);
+    vTaskDelay( 500 / portTICK_RATE_MS);
+
+
   }
 }
 
@@ -63,10 +64,9 @@ void vTaskReadSPIData(void *pvParameters){
   while(1){
 
     xSemaphoreTake(xSemaphoreSPI, portMAX_DELAY);
-    flush_icache_and_dcache();
+    // flush_icache_and_dcache();
     SPI1_ReadData(&recv);
-    printk("Received: %x\n", recv);
-    xSemaphoreGive(xSemaphoreSPI);
-    vTaskDelay( 1000 / portTICK_RATE_MS);
+    // printk("Received: %x\n", recv);
+    vTaskDelay( 500 / portTICK_RATE_MS);
   }
 }

@@ -43,20 +43,11 @@ void main ( void ){
 			 	 FreeRTOS is alive */
 		  xTaskCreate(
 		    vTaskSendSPIData,
-		    (const signed char *)"SEND_spi",
+		    (const signed char *)"SEND1_spi",
 		    configMINIMAL_STACK_SIZE,
 		    NULL,
 		    1,
 		    NULL);
-
-			// /* create task for deferred interrupt handling*/
-			// xTaskCreate(
-			// 	vTaskDeferredSPI_ISR,
-			// 	(const signed char *)"spi_irq_task",
-			// 	configMINIMAL_STACK_SIZE,
-			// 	NULL,
-			// 	3,
-			// 	NULL);
 
 
 
