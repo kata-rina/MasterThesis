@@ -20,10 +20,10 @@ static uint32_t *ptr = (uint32_t *) 0x41200000;
 void vApplicationIdleHook( void ) {
 
     /* call scheduler */
-      // YIELD();
-      while(1);
-      // asm volatile (	"dsb		\n"
-      					      // "isb		\n" );
+      YIELD();
+      // while(1);
+      asm volatile (	"dsb		\n"
+      					      "isb		\n" );
 
 }
 
@@ -42,14 +42,21 @@ void vApplicationMallocFailedHook( void ){
 /* some other task to signalize that FreeRTOS is alive */
 void vTaskSendSPIData(void *pvParameters) {
 
-  volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
+  // volatile uint32_t *data = (volatile uint32_t *)(0x161A80);
+  vTaskDelay( 2000 / portTICK_RATE_MS);
+  SPI_1_Reset();
+  SPI_1_ClockEnable();
+  SPI_1_SignalRoute();
+  SPI_1_Config();
+  SPI_1_Enable();
+
   while(1){
     SPI1_SendData(0xAC);
     // memcpy(data, &test, sizeof(test));
 
-    vTaskDelay( 500 / portTICK_RATE_MS);
+    vTaskDelay( 1000 / portTICK_RATE_MS);
     SPI1_SendData(0xBC);
-    vTaskDelay( 500 / portTICK_RATE_MS);
+    vTaskDelay( 1000 / portTICK_RATE_MS);
 
 
   }
@@ -60,13 +67,14 @@ void vTaskSendSPIData(void *pvParameters) {
 void vTaskReadSPIData(void *pvParameters){
 
   volatile uint8_t recv;
+  vTaskDelay( 2000 / portTICK_RATE_MS);
 
   while(1){
 
     xSemaphoreTake(xSemaphoreSPI, portMAX_DELAY);
     // flush_icache_and_dcache();
     SPI1_ReadData(&recv);
-    // printk("Received: %x\n", recv);
-    vTaskDelay( 500 / portTICK_RATE_MS);
+    printk("Received: %x\n", recv);
+    vTaskDelay( 1000 / portTICK_RATE_MS);
   }
 }

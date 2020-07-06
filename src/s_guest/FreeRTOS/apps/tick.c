@@ -14,7 +14,7 @@ void vFreeRTOS_SetupTickInterrupt( void ){
 	vFreeRTOS_ClearTickInterrupt();
 
 	/* Set tick every 500 ms */
-	ttc_request(TTC0, TTCx_2, 500000);
+	ttc_request(TTC0, TTCx_2, 1000000);
 	ttc_enable(TTC0, TTCx_2);
 
 }

@@ -239,6 +239,9 @@ void SPI_1_irq_handler(uint32_t interrupt){
       uint8_t read;
       BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+      tog ^= 0xFF;
+      *led = tog;
+
       /* First take semaphore and then process the interrupt */
       // xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
 
@@ -268,7 +271,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
       while((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
 
           read = SPI_Struct->rxd_register;
-
+          printk("Read:%x\n", read);
           // check for buffer overrun
           rx_head = RX_BUFFER_HEAD + 1;
           if (rx_head == RX_BUFF_SIZE) rx_head = 0;
@@ -343,9 +346,6 @@ uint8_t SPI1_ReadData(uint8_t *data){
         RX_BUFFER_TAIL++;
         if (RX_BUFFER_TAIL == RX_BUFF_SIZE){
           RX_BUFFER_TAIL = 0;
-          for (i=0; i < RX_BUFF_SIZE; i++){
-            printk("Buffer[%d] = %x\n", i, RX_BUFFER[i]);
-          }
         }
 
 

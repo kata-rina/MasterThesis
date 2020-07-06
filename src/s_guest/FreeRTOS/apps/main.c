@@ -15,11 +15,11 @@ void main ( void ){
 	hw_init();
 
 	/* Initialize SPI 1 controller */
-	SPI_1_Reset();
-	SPI_1_ClockEnable();
-	SPI_1_SignalRoute();
-	SPI_1_Config();
-	SPI_1_Enable();
+	// SPI_1_Reset();
+	// SPI_1_ClockEnable();
+	// SPI_1_SignalRoute();
+	// SPI_1_Config();
+	// SPI_1_Enable();
 
 	/* Create binary semaphore for SPI tasks and SPI ISR*/
 	xSemaphoreSPI = xSemaphoreCreateBinary();
@@ -34,7 +34,7 @@ void main ( void ){
 		  xTaskCreate(
 		    vTaskReadSPIData,
 		    (const signed char *)"READ_spi",
-		    configMINIMAL_STACK_SIZE,
+		    configMINIMAL_STACK_SIZE*2,
 		    NULL,
 		    2,
 		    NULL);

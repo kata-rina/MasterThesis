@@ -47,6 +47,7 @@
 */
 
 #include <board.h>
+#include <printk.h>
 
 #define DIV0		8
 #define DIV1		5
@@ -73,6 +74,9 @@ uint32_t board_init(void){
 	/* Handling DDR memory security (first 7 segments NS = 7*64MB = 448MB)
 		(last memory segment  is configured as Secure)*/
 	write32( (void *)TZ_DDR_RAM, 0x0000007f);
+
+	write32( (void *)SECURITY7_SMC, 0x1 );
+
 	printk("      * Memory security - OK  \n\t");
 
 	/** Handling devices security */
@@ -82,11 +86,19 @@ uint32_t board_init(void){
 	write32( (void *)SECURITY3_SDIO1, 0x1);
 	/* QSPI slave security (NS) */
 	write32( (void *)SECURITY4_QSPI, 0x1);
+
 	/* APB slave security (NS) */
 	write32( (void *) SECURITY6_APBSL, 0x00007dff);
-	/* DMA slave security (S) */
+
+	write32( (void *)DMAC_RST_CTRL, 0x1);
+
+	/* DMA slave security operates in (NS) state */
 	write32( (void *)TZ_DMA_NS, 0x1);
 	write32( (void *)TZ_DMA_IRQ_NS, 0x0000ffff);
+	write32( (void *)TZ_DMA_PERIPH_NS, 0xf);
+
+	write32( (void *)DMAC_RST_CTRL, 0x0);
+
 
 	/* Ethernet security */
 	write32( (void *)TZ_GEM, 0x3);

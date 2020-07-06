@@ -61,7 +61,7 @@ void hw_init( void ){
   /* setup interrupt for SPI 1 controller */
   interrupt_enable(SPI_1_INTERRUPT,TRUE);
   interrupt_target_set(SPI_1_INTERRUPT, 0, 1);
-  interrupt_priority_set(SPI_1_INTERRUPT, 5);
+  interrupt_priority_set(SPI_1_INTERRUPT, 1);
 
 }
 
