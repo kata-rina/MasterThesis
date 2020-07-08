@@ -171,19 +171,21 @@ void SPI_1_Config(void){
       // look for bus collisions
       SPI_Struct->cr_register |= (uint32_t)CR_MODE_FAIL_EN;
 
-      // do not initiate a transmission
-      // SPI_InitStruct->cr_register |= (uint32_t)CR_MAN_START_AUTO;
+      // disable all interrupts
+      SPI_Struct->idis_register = (uint32_t) 0x7F;
 
+      // mask TX interrupts
+      SPI_Struct->imask_register = (uint32_t) IMR_TXFULL_DIS | IMR_TXUF_DIS | IMR_TXOVR_DIS;
 
-      // SPI_InitStruct->dr_register = (uint32_t)DR_AFTER_MASK;
-
-      // manual chip select
+      // manual chip select and auto start
       SPI_Struct->cr_register |= (uint32_t)CR_MAN_CS;
+      SPI_Struct->cr_register |= (uint32_t)CR_MAN_START_AUTO;
 
       // set RX and TX FIFO treshold values
       // RX FIFO treshold and TX FIFO treshold set to one byte
       SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
       SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
+
 
       /* init buffer for storing incoming data from RX FIFO buffer in SPI controller */
       RX_BUFFER_HEAD = 0;
@@ -203,9 +205,8 @@ void SPI_1_Enable(void){
       // enable manual SS
       SPI_Struct->cr_register |= (uint32_t)(CR_MAN_CS);
 
-      /* enable the interrupts enable RX FIFO full RX FIFO overflow, TX FIFO
-        empty and fault conditions 0x27 */
-      SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN | IER_RX_NEMPTY_EN;
+      // assert slave select 0
+      SPI1_assert_slave(0);
 
       // enable the controller
       SPI_Struct->er_register = (uint32_t)ER_SPI_ENABLE;
@@ -222,10 +223,6 @@ void SPI_1_Disable(void){
 
       // disable the controller
       SPI_Struct->er_register = (uint32_t)ER_SPI_DISABLE;
-
-      // disable interrupts
-      SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
-                                  IDR_RXFULL_DIS | IDR_TXFULL_DIS | IDR_RX_NEMPTY_DIS);
 
       return;
 }
@@ -252,6 +249,8 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
       // determine the source of the interrupt - read from status register
       irq_status = (SPI_Struct->sr_register);
+
+      printk("IRQ status register = 0x%x:\n", irq_status);
 
       /* clear the interrupts : write 1s to the interrupt status register */
 
@@ -283,11 +282,16 @@ void SPI_1_irq_handler(uint32_t interrupt){
           }
         }
 
+      /* clear RX interrupts */
+      SPI_Struct->sr_register |=  (uint32_t)SR_RX_NEMPTY;
+      SPI_Struct->sr_register |=  (uint32_t)SR_RX_FULL;
+      SPI_Struct->sr_register |=  (uint32_t)SR_TX_OVRFLW_NO;
 
-      // enable interrupts
-      SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-                                 IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+      printk("IRQ after status register = 0x%x:\n", SPI_Struct->sr_register);
 
+
+      // De-assert all chip selects and disable the controller
+      SPI_1_Disable();
 
       /* Give the semaphore to unblock the task */
       xSemaphoreGiveFromISR( xSemaphoreSPI, &xHigherPriorityTaskWoken );
@@ -308,16 +312,15 @@ uint8_t SPI1_SendData(uint8_t data){
 
       uint8_t byte_counter = 0;
 
-      // assert slave select 0
-      uint32_t reg = SPI_Struct->cr_register;
-      uint32_t cs_mask = 0xFFFFC3FF;
-      reg &= cs_mask;
-
-      SPI_Struct->cr_register = (uint32_t)(reg | CR_CS_0);
+      // Enable the controller
+      SPI_1_Enable();
 
       // send data
       SPI_Struct->txd_register =(uint32_t) data;
 
+      /* enable the interrupts enable RX FIFO full RX FIFO overflow, TX FIFO
+        empty and fault conditions 0x27 */
+      SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN | IER_RX_NEMPTY_EN;
 
       byte_counter++;
 
@@ -334,9 +337,9 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint32_t i;
     uint8_t rx_char;
 
-    // disable spi interrupt
-    SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS | IDR_TXOVR_DIS |
-                                IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
+    // // disable spi interrupt
+    // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS |
+    //                             IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
 
 
     // fetch data from RX buffer
@@ -354,11 +357,11 @@ uint8_t SPI1_ReadData(uint8_t *data){
     }
 
     // de-assert all chip selects
-    SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
+    // SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
 
     // enable interrupt
-    SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-                               IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+    // SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
+                               // IER_RX_NEMPTY_EN | IER_RXFULL_EN);
 
     return ret;
 }
@@ -371,7 +374,7 @@ void SPI1_assert_slave(uint8_t slave_nmr){
   reg &= cs_mask;
 
   if (slave_nmr == 0){
-      SPI_Struct->cr_register = (uint32_t)reg | CR_CS_0;
+      SPI_Struct->cr_register = (uint32_t)reg;
   }
 
   return;

@@ -64,10 +64,6 @@
 	orr	r0, r0, #SCR_NS_BIT	@ Enable NS bit
 	orr	r0, r0, #SCR_FIQ_BIT	@ Enable the route of FIQ in Monitor
 	mcr     p15, 0, r0, c1, c1, 0	@ Write SCR
-  @ unmask abort in cpsr register
-  mrs r0, cpsr
-  bic r0, r0, #A_BIT
-  msr cpsr, r0
 	pop 	{r0}
 .endm
 

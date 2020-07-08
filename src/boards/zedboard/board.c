@@ -60,9 +60,6 @@
  * @retval
  */
 uint32_t board_init(void){
-	// volatile uint32_t tmp;
-	// uint32_t gem_val;
-	// tmp = SLCR_GEM0_CLK_CTRL_ADDR;
 
 	/** Unlocking SLCR register */
 	write32( (void *)SLCR_UNLOCK, SLCR_UNLOCK_KEY);
@@ -108,7 +105,6 @@ uint32_t board_init(void){
 	/* FPGA AFI AXI ports TrustZone */
 	write32( (void *)SECURITY_APB, 0x3F);
 	write32( (void *)TZ_FPGA_M, 0x3);
-	// write32( (void *)SECURITY_FSSW_S0, 0x1);
 
 
 	/* Handling more devices ... */
