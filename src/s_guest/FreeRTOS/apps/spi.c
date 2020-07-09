@@ -183,8 +183,8 @@ void SPI_1_Config(void){
 
       // set RX and TX FIFO treshold values
       // RX FIFO treshold and TX FIFO treshold set to one byte
-      SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
-      SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
+      // SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
+      // SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
 
 
       /* init buffer for storing incoming data from RX FIFO buffer in SPI controller */
@@ -329,7 +329,7 @@ uint8_t SPI1_SendData(uint8_t data){
 
 
 //==============================================================================
-/* Function reads data from RX BUFFER */
+/* Function reads data from RX BUFFER in system memory. */
 uint8_t SPI1_ReadData(uint8_t *data){
 
 
@@ -367,6 +367,8 @@ uint8_t SPI1_ReadData(uint8_t *data){
 }
 
 //==============================================================================
+/* SPI slave select function. According to documentation it is recommended to
+   use SS0 as slave select when using SPI1 controller. */
 void SPI1_assert_slave(uint8_t slave_nmr){
 
   uint32_t reg = SPI_Struct->cr_register;
@@ -381,6 +383,7 @@ void SPI1_assert_slave(uint8_t slave_nmr){
 }
 
 //==============================================================================
+/* Deassert all chip selects. */
 void SPI1_deassert_slave(void){
 
   SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
