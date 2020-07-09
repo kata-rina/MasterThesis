@@ -267,7 +267,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
       // RX event
       // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
-      while((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
+      if((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
 
           read = SPI_Struct->rxd_register;
           // check for buffer overrun

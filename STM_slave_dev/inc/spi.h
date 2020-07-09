@@ -45,9 +45,10 @@
 #define SPIx_SS_SOURCE                GPIO_PinSource9
 #define SPIx_SS_AF                    GPIO_AF_SPI2
 
-void SPIx_Send(uint8_t data, SPI_TypeDef* SPI_x);
+// void SPIx_Send(uint8_t data, SPI_TypeDef* SPI_x);
 uint8_t SPIx_Read(SPI_TypeDef* SPI_x);
 void SPI_1_Init(void);
+void SPIx_Send( SPI_TypeDef* SPI_x);
 
 
 #endif
