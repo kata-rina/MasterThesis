@@ -50,9 +50,9 @@
 #define SPI_CLKACT1_DIS       (0 << 1)    // SPI 1 reference clock disabled
 
 /* Select the source used to generate the clock */
-#define SPI_SRCSEL_IO         (00 << 4)   // I/O PLL
-#define SPI_SRCSEL_ARM        (10 << 4)   // ARM PLL
-#define SPI_SRCSEL_DDR        (11 << 4)   // DDR PLL
+#define SPI_SRCSEL_IO         (0b00 << 4)   // I/O PLL
+#define SPI_SRCSEL_ARM        (0b10 << 4)   // ARM PLL
+#define SPI_SRCSEL_DDR        (0b11 << 4)   // DDR PLL
 
 /* Provide the divisor used to devide the source clock to
    generate the required generated clock frequency. */
@@ -82,17 +82,17 @@
 #define MIO_TRI_EN         (0x1)       // enable
 
 /* L3_SEL is specific to every MIO pin*/
-#define MIO10_L3_SEL_SPI1   (101 << 5)  // select SPI 1 MOSI signal on MIO 10
+#define MIO10_L3_SEL_SPI1   (0b101 << 5)  // select SPI 1 MOSI signal on MIO 10
 
 /* Select IO Buffer edge rate, applicable when IO_Type is LVCMOS18/25/33 */
 #define MIO_SPEED_SLOW      (0 << 8)    // slow CMOS edge
 #define MIO_SPEED_FAST      (1 << 8)    // fast CMOS edge
 
 /* Select the IO Buffer type */
-#define MIO_IO_TYPE_CMOS18  (001 << 9)  // LVCMOS18
-#define MIO_IO_TYPE_CMOS25  (010 << 9)  // LVCMOS25
-#define MIO_IO_TYPE_CMOS33  (011 << 9)  // LVCMOS33
-#define MIO_IO_TYPE_HSTL    (100 << 9)  // HSTL
+#define MIO_IO_TYPE_CMOS18  (0b001 << 9)  // LVCMOS18
+#define MIO_IO_TYPE_CMOS25  (0b010 << 9)  // LVCMOS25
+#define MIO_IO_TYPE_CMOS33  (0b011 << 9)  // LVCMOS33
+#define MIO_IO_TYPE_HSTL    (0b100 << 9)  // HSTL
 
 /* Pull up resistor on IO Buffer pin */
 #define MIO_PULLUP_EN       (1 << 12)   // enable pull up
@@ -104,11 +104,11 @@
 
 /* L3_SEL for MIO 11/12/13/14/15 pins */
 
-#define MIO11_L3_SEL_SPI1    (101 << 5)  // select SPI 1 MISO signal on MIO 11
-#define MIO12_L3_SEL_SPI1    (101 << 5)  // select SPI 1 CLK signal on MIO 12
-#define MIO13_L3_SEL_SPI1    (101 << 5)  // select SPI 1 SS0 signal on MIO 13
-#define MIO14_L3_SEL_SPI1    (101 << 5)  // select SPI 1 SS1 signal on MIO 14
-#define MIO15_L3_SEL_SPI1    (101 << 5)  // select SPI 1 SS2 signal on MIO 15
+#define MIO11_L3_SEL_SPI1    (0b101 << 5)  // select SPI 1 MISO signal on MIO 11
+#define MIO12_L3_SEL_SPI1    (0b101 << 5)  // select SPI 1 CLK signal on MIO 12
+#define MIO13_L3_SEL_SPI1    (0b101 << 5)  // select SPI 1 SS0 signal on MIO 13
+#define MIO14_L3_SEL_SPI1    (0b101 << 5)  // select SPI 1 SS1 signal on MIO 14
+#define MIO15_L3_SEL_SPI1    (0b101 << 5)  // select SPI 1 SS2 signal on MIO 15
 
 //=================================================================================
 //=================================================================================
@@ -152,14 +152,14 @@
 
 /* Master mode baud rate divisor controls the amount of the
  * spi_clf is divided inside the SPI block */
-#define CR_BAUD_RATE_DIV_0          (000 << 3)  // division not supported
-#define CR_BAUD_RATE_DIV_4          (001 << 3)  // divide by 4
-#define CR_BAUD_RATE_DIV_8          (010 << 3)  // divide by 8
-#define CR_BAUD_RATE_DIV_16         (011 << 3)  // divide by 16
-#define CR_BAUD_RATE_DIV_32         (100 << 3)  // divide by 32
-#define CR_BAUD_RATE_DIV_64         (101 << 3)  // divide by 64
-#define CR_BAUD_RATE_DIV_128        (110 << 3)  // divide by 128
-#define CR_BAUD_RATE_DIV_256        (111 << 3)  // divide by 256
+#define CR_BAUD_RATE_DIV_0          (0b000 << 3)  // division not supported
+#define CR_BAUD_RATE_DIV_4          (0b001 << 3)  // divide by 4
+#define CR_BAUD_RATE_DIV_8          (0b010 << 3)  // divide by 8
+#define CR_BAUD_RATE_DIV_16         (0b011 << 3)  // divide by 16
+#define CR_BAUD_RATE_DIV_32         (0b100 << 3)  // divide by 32
+#define CR_BAUD_RATE_DIV_64         (0b101 << 3)  // divide by 64
+#define CR_BAUD_RATE_DIV_128        (0b110 << 3)  // divide by 128
+#define CR_BAUD_RATE_DIV_256        (0b111 << 3)  // divide by 256
 
 #define CR_REF_CLK_NS               (1 << 8)    // master ref clock not supported
 #define CR_REF_CLK_SPI              (0 << 8)    // use SPI reference clock
@@ -169,17 +169,19 @@
 #define CR_PERI_SEL_3TO8            (1 << 9)    // allow external 3 to 8 decode
 
 /* Peripheral chip select lines */
-#define CR_CS_0                     (0000 << 10)  // slave 0 selected
-#define CR_CS_1                     (0001 << 10)  // slave 1 selected
-#define CR_CS_2                     (0011 << 10)  // slave 2 selected
-#define CR_CS_R                     (0111 << 10)  // reserved
-#define CR_CS_NS                    (1111 << 10)  // no slave selected
+#define CR_CS_0                     (0b0000 << 10)  // slave 0 selected
+#define CR_CS_1                     (0b0001 << 10)  // slave 1 selected
+#define CR_CS_2                     (0b0011 << 10)  // slave 2 selected
+#define CR_CS_R                     (0b0111 << 10)  // reserved
+#define CR_CS_NS                    (0b1111 << 10)  // no slave selected
 
 #define CR_MAN_CS                   (1 << 14)     // manual CS
 #define CR_MAN_AUTO                 (0 << 14)     // auto CS
 
 #define CR_MAN_START_EN             (1 << 15)     // manual start enbale
 #define CR_MAN_START_AUTO           (0 << 15)     // auto mode
+
+#define CR_START_COMMAND            (1 << 16)     // command to start transmission
 
 #define CR_MODE_FAIL_EN             (1 << 17)     // ModeFail generation enable
 #define CR_MODE_FAIL_DIS            (0 << 17)     // ModeFail generation disable
@@ -283,11 +285,21 @@
 
 /* delay in SPI REFERENCE CLOCK between last bit of
  * current word and the first bit of the next word */
-#define DR_AFTER_MASK       (0b11 << 8)
+#define DR_AFTER_MASK       (1 << 8)
 
-/* delay in SPI REFERENCE CLOCK for the length that the master mode chip
- * select outputs are de-asserted between words when cpha = 0 */
-#define DR_D_NSS            (0x3 << 24)
+/* DELAY BETWEEN WORDS
+ * The delay between the last bit period of the current word and the first bit
+ * of the firsti bit period of the next word.
+ * Time = ( 2 + [d_btwn] )* SPI_Ref_Clk.
+ * The minimum time is 3 SPI_Ref_Clk.*/
+#define DR_D_BTWN_MIN        (1 << 16)
+
+/* SS ACTIVITY
+ * delay in SPI REFERENCE CLOCK for the length that the master mode chip
+ * select outputs are de-asserted between words when cpha = 0.
+ * Delay time = ( 1 + [d_nss] )*SPI_Ref_Clk clock period.
+ * The minimum time is 2*SPI_Ref_Clk periods. */
+#define DR_D_NSS_MIN        (0x1 << 24)
 //===================================================================================
 //===================================================================================
 // define master/slave mode
@@ -298,7 +310,7 @@
 //==================================================================================
 /* Treshold values for RX and TX FIFO buffers in the controller */
 #define RX_THRES_VAL        0x01
-#define TX_THRES_VAL        0x01
+#define TX_THRES_VAL        0x05
 
 
 /* Zynq SPI register structure - all registers are 32 bit wide */

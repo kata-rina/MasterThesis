@@ -15,18 +15,12 @@ void SPI_1_Init(void){
 
   /* Peripheral Clock Enabe ---------------------------------------------------*/
   // Enable SPI Clock
-  // SPIx_CLK_INIT(RCC_AHB1Periph_GPIOB, ENABLE);
   // Enable GPIO clock for MOSI, MISO and NSS GPIO
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-  // RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
   /* GPIO Configuration for SPI -----------------------------------------------*/
-  // Connect the pin to the desired peripherals' Alternate Function
-  // GPIO_PinAFConfig(SPIx_SCK_GPIO_PORT, SPIx_SCK_SOURCE, SPIx_SCK_AF);
-  // GPIO_PinAFConfig(SPIx_MISO_GPIO_PORT, SPIx_MISO_SOURCE, SPIx_MISO_AF);
-  // GPIO_PinAFConfig(SPIx_MOSI_GPIO_PORT, SPIx_MOSI_SOURCE, SPIx_MOSI_AF);
-  // GPIO_PinAFConfig(SPIx_SS_GPIO_PORT,SPIx_SS_SOURCE, SPIx_SS_AF);
+
   // Configuration of desired pins
   GPIO_Spi.GPIO_Mode = GPIO_Mode_AF;
   GPIO_Spi.GPIO_Speed = GPIO_Speed_50MHz;
@@ -45,16 +39,14 @@ void SPI_1_Init(void){
   GPIO_Spi.GPIO_Pin = GPIO_Pin_6;
   GPIO_Init(GPIOA, &GPIO_Spi);
 
-
   // SPI SS pin
   GPIO_Spi.GPIO_Pin = GPIO_Pin_4;
   GPIO_Spi.GPIO_Mode = GPIO_Mode_IN;
   GPIO_Spi.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Spi.GPIO_OType = GPIO_OType_PP;
-
-
   GPIO_Init(GPIOA, &GPIO_Spi);
 
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource4, GPIO_AF_SPI1);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource5, GPIO_AF_SPI1);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource6, GPIO_AF_SPI1);
   GPIO_PinAFConfig(GPIOA, GPIO_PinSource7, GPIO_AF_SPI1);
@@ -64,6 +56,7 @@ void SPI_1_Init(void){
   // reset to default configuration
   SPI_I2S_DeInit(SPI1);
 
+  // configure SPI
   SPIx_InitStruct.SPI_Mode = SPI_Mode_Slave;
   SPIx_InitStruct.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
   SPIx_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
@@ -76,6 +69,7 @@ void SPI_1_Init(void){
   SPI_Init( SPI1, &SPIx_InitStruct);
 
   SPI_BiDirectionalLineConfig(SPI1, SPI_Direction_1Line_Rx | SPI_Direction_1Line_Tx );
+
   // enable SPI
   SPI_Cmd( SPI1, ENABLE);
 
@@ -86,10 +80,10 @@ void SPI_1_Init(void){
 void SPIx_Send(uint8_t data, SPI_TypeDef* SPI_x){
 
     uint16_t recv;
-    //check nss
-    // while(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 ));
-    if (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 )){
 
+    //check nss
+    if (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 )){
+      SPI_I2S_SendData( SPI_x, (uint16_t) 0xBC );
       if (SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_RXNE )){
         recv = SPI_I2S_ReceiveData(SPI_x);
         if ((recv) == 0xbc){
@@ -98,13 +92,18 @@ void SPIx_Send(uint8_t data, SPI_TypeDef* SPI_x){
         else{
           gpio_led_state(LED6_BLUE_ID, 0);
         }
-          gpio_led_state(LED5_RED_ID, 0);
-        // while(!SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_TXE));
-          gpio_led_state(LED5_RED_ID, 1);
-          SPI_I2S_SendData( SPI_x, (uint16_t) 0xBC );
+          if (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 ))
+          {
+            gpio_led_state(LED5_RED_ID, 1);
+            SPI_I2S_SendData( SPI_x, (uint16_t) 0xBC );
+        }
 
     }
-}
+  }
+  else{
+    gpio_led_state(LED5_RED_ID, 0);
+  }
+
   return;
 }
 

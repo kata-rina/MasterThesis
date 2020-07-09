@@ -108,11 +108,11 @@ void sDataAbort_handler( uint32_t dfsr, uint32_t spsr, uint32_t sctrl ){
 	asm volatile("push {lr}");
 	asm volatile ("sub r0, lr, #8");
 	asm volatile ("mov %0, r0" : "=r"(addr) ::);
-	printk("Abort at 0x%x\n", addr);
-
-	printk("Abort register: 0x%x\n", dfsr);
-	printk("SPSR register:	0x%x\n", spsr);
-	printk("SCTRL register: 0x%x\n", sctrl);
+	// printk("Abort at 0x%x\n", addr);
+	//
+	// printk("Abort register: 0x%x\n", dfsr);
+	// printk("SPSR register:	0x%x\n", spsr);
+	// printk("SCTRL register: 0x%x\n", sctrl);
 
 	asm volatile("pop {lr}");
 	asm volatile("subs pc, lr, #8");

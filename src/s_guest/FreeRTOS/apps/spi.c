@@ -31,7 +31,7 @@ uint8_t RX_BUFFER_HEAD, RX_BUFFER_TAIL;
 /* little function for delay */
 static inline void wait()
 {
-    int32_t count = 100000;
+    int32_t count = 10000;
     asm volatile("__delay_%=: subs %[count], %[count], #1; bne __delay_%=\n"
     : "=r"(count): [count]"0"(count) : "cc");
 }
@@ -119,22 +119,22 @@ void SPI_1_SignalRoute(void){
 
       /* MOSI signal routing */
       *mosi = (uint32_t)MIO_RESET_VAL;
-      *mosi = (uint32_t)(MIO10_L3_SEL_SPI1 | MIO_TRI_DIS  | MIO_IO_TYPE_CMOS33);
+      *mosi = (uint32_t)(MIO10_L3_SEL_SPI1 | MIO_TRI_DIS  | MIO_IO_TYPE_CMOS18);
       *mosi |= (uint32_t)(MIO_SPEED_SLOW | MIO_PULLUP_DIS | MIO_HSTL_REC_DIS);
 
       /* MISO signal routing */
       *miso = (uint32_t)MIO_RESET_VAL;
-      *miso = (uint32_t)(MIO11_L3_SEL_SPI1 | MIO_TRI_EN | MIO_IO_TYPE_CMOS33);
+      *miso = (uint32_t)(MIO11_L3_SEL_SPI1 | MIO_TRI_EN | MIO_IO_TYPE_CMOS18);
       *miso |= (uint32_t)(MIO_SPEED_SLOW | MIO_PULLUP_DIS | MIO_HSTL_REC_DIS);
 
       /* SPI CLK signal routing */
       *clk = (uint32_t)(MIO_RESET_VAL);
-      *clk = (uint32_t) (MIO12_L3_SEL_SPI1 | MIO_TRI_DIS  | MIO_IO_TYPE_CMOS33);
+      *clk = (uint32_t) (MIO12_L3_SEL_SPI1 | MIO_TRI_DIS  | MIO_IO_TYPE_CMOS18);
       *clk |= (uint32_t)(MIO_SPEED_SLOW | MIO_PULLUP_DIS | MIO_HSTL_REC_DIS);
 
       /* Slave select 0 signal routing */
       *ss0 = (uint32_t)MIO_RESET_VAL;
-      *ss0 = (uint32_t)(MIO13_L3_SEL_SPI1 | MIO_TRI_DIS | MIO_IO_TYPE_CMOS33);
+      *ss0 = (uint32_t)(MIO13_L3_SEL_SPI1 | MIO_TRI_DIS | MIO_IO_TYPE_CMOS18);
       *ss0 |= (uint32_t)(MIO_SPEED_SLOW | MIO_PULLUP_EN | MIO_HSTL_REC_DIS);
 
       write32( (void *)SLCR_LOCK, SLCR_LOCK_KEY);
@@ -163,7 +163,7 @@ void SPI_1_Config(void){
       SPI_Struct->cr_register |= (uint32_t)CR_BAUD_RATE_DIV_4;
 
       // set clock phase and polarity
-      SPI_Struct->cr_register |= (uint32_t)(CR_CLK_POL_HIGH | CR_CLK_PHASE_INACTIVE);
+      SPI_Struct->cr_register |= (uint32_t)(CR_CLK_POL_HIGH | CR_CLK_PHASE_ACTIVE);
 
       // configure master mode
       SPI_Struct->cr_register |= (uint32_t)CR_MASTER_MODE;
@@ -183,9 +183,11 @@ void SPI_1_Config(void){
 
       // set RX and TX FIFO treshold values
       // RX FIFO treshold and TX FIFO treshold set to one byte
-      // SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
-      // SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
+      SPI_Struct->rx_thres_reg = (uint32_t)RX_THRES_VAL;
+      SPI_Struct->txwr_register = (uint32_t)TX_THRES_VAL;
 
+      // Set requested delays
+      SPI_Struct->dr_register = (uint32_t)DR_D_BTWN_MIN | DR_D_NSS_MIN;
 
       /* init buffer for storing incoming data from RX FIFO buffer in SPI controller */
       RX_BUFFER_HEAD = 0;
@@ -250,8 +252,6 @@ void SPI_1_irq_handler(uint32_t interrupt){
       // determine the source of the interrupt - read from status register
       irq_status = (SPI_Struct->sr_register);
 
-      printk("IRQ status register = 0x%x:\n", irq_status);
-
       /* clear the interrupts : write 1s to the interrupt status register */
 
       /* clear TX FIFO FULL interrupt */
@@ -270,7 +270,6 @@ void SPI_1_irq_handler(uint32_t interrupt){
       while((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
 
           read = SPI_Struct->rxd_register;
-          printk("Read:%x\n", read);
           // check for buffer overrun
           rx_head = RX_BUFFER_HEAD + 1;
           if (rx_head == RX_BUFF_SIZE) rx_head = 0;
@@ -285,10 +284,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
       /* clear RX interrupts */
       SPI_Struct->sr_register |=  (uint32_t)SR_RX_NEMPTY;
       SPI_Struct->sr_register |=  (uint32_t)SR_RX_FULL;
-      SPI_Struct->sr_register |=  (uint32_t)SR_TX_OVRFLW_NO;
-
-      printk("IRQ after status register = 0x%x:\n", SPI_Struct->sr_register);
-
+      SPI_Struct->sr_register |=  (uint32_t)SR_TX_OVRFLW_YES;
 
       // De-assert all chip selects and disable the controller
       SPI_1_Disable();
@@ -318,6 +314,8 @@ uint8_t SPI1_SendData(uint8_t data){
       // send data
       SPI_Struct->txd_register =(uint32_t) data;
 
+      // wait();
+
       /* enable the interrupts enable RX FIFO full RX FIFO overflow, TX FIFO
         empty and fault conditions 0x27 */
       SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN | IER_RX_NEMPTY_EN;
@@ -338,8 +336,8 @@ uint8_t SPI1_ReadData(uint8_t *data){
     uint8_t rx_char;
 
     // // disable spi interrupt
-    // SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS |
-    //                             IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
+    SPI_Struct->idis_register = (uint32_t)(IDR_RXOVR_DIS | IDR_MODF_DIS |
+                                IDR_RX_NEMPTY_DIS | IDR_RXFULL_DIS);
 
 
     // fetch data from RX buffer
@@ -360,8 +358,8 @@ uint8_t SPI1_ReadData(uint8_t *data){
     // SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
 
     // enable interrupt
-    // SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
-                               // IER_RX_NEMPTY_EN | IER_RXFULL_EN);
+    SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
+                               IER_RX_NEMPTY_EN | IER_RXFULL_EN);
 
     return ret;
 }
