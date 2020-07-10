@@ -241,9 +241,6 @@ void SPI_1_irq_handler(uint32_t interrupt){
       tog ^= 0xFF;
       *led = tog;
 
-      /* First take semaphore and then process the interrupt */
-      // xSemaphoreTakeFromISR(xSemaphoreSPI, &xHigherPriorityTaskWoken);
-
       /* Do neccessary work here and unblock semaphore */
 
       // disable all interrupts except TX FIFO FULL and RX FIFO NOT EMPTY
@@ -267,7 +264,7 @@ void SPI_1_irq_handler(uint32_t interrupt){
 
       // RX event
       // empty the RX FIFO (check for RX FIFO full and RX FIFO not empty)
-      if((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
+      while((SPI_Struct->sr_register & SR_RX_NEMPTY) || (SPI_Struct->sr_register & SR_RX_FULL)){
 
           read = SPI_Struct->rxd_register;
           // check for buffer overrun
@@ -314,8 +311,6 @@ uint8_t SPI1_SendData(uint8_t data){
       // send data
       SPI_Struct->txd_register =(uint32_t) data;
 
-      // wait();
-
       /* enable the interrupts enable RX FIFO full RX FIFO overflow, TX FIFO
         empty and fault conditions 0x27 */
       SPI_Struct->ien_register =  (uint32_t)IER_RXFULL_EN | IER_RX_NEMPTY_EN;
@@ -354,8 +349,6 @@ uint8_t SPI1_ReadData(uint8_t *data){
 
     }
 
-    // de-assert all chip selects
-    // SPI_Struct->cr_register |= (uint32_t)CR_CS_NS;
 
     // enable interrupt
     SPI_Struct->ien_register = (uint32_t)(IER_RXOVR_EN | IER_MODF_EN |
@@ -366,13 +359,14 @@ uint8_t SPI1_ReadData(uint8_t *data){
 
 //==============================================================================
 /* SPI slave select function. According to documentation it is recommended to
-   use SS0 as slave select when using SPI1 controller. */
+   use SS0 as slave select when using SPI1 controller. (Xilinx AR58294) */
 void SPI1_assert_slave(uint8_t slave_nmr){
 
   uint32_t reg = SPI_Struct->cr_register;
   uint32_t cs_mask = 0xFFFFC3FF;
   reg &= cs_mask;
 
+  /* Other slave asserts not implemented */
   if (slave_nmr == 0){
       SPI_Struct->cr_register = (uint32_t)reg;
   }

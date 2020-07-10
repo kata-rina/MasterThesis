@@ -8,7 +8,7 @@ int main(){
 
 
   while(1){
-
+    /* Communicate via SPI - polling method*/
     SPIx_Read(SPI1);
     SPIx_Send(SPI1);
   }

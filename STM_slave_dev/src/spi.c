@@ -2,11 +2,16 @@
 #include <gpio.h>
 
 uint8_t i = 0;
-/*-----------------------------------------------------------------------------*/
+
+
+/*==============================================================================*/
+/*==============================================================================*/
 /* Function configurates and initializes SPI Peripheral
    - STM32F4 is slave device in this case
    - input argument = none
-   - return value = none */
+   - return value = none
+   In this configuration pin PB4 is used as MISO line beacuse there were some
+   problems with pin PA7 (this problem is probably device specific) */
 void SPI_1_Init(void){
 
   SPI_InitTypeDef SPIx_InitStruct;
@@ -80,42 +85,26 @@ void SPI_1_Init(void){
 }
 
 
-// void SPIx_Send(uint8_t data, SPI_TypeDef* SPI_x){
-//   uint16_t recv;
-//
-//
-//   if (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 ))
-//   {
-//     // while(SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_BSY));
-//     gpio_led_state(LED5_RED_ID, 1);
-//     // while (!SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_TXE )){
-//     recv = SPI_I2S_ReceiveData(SPI_x);
-//       SPI_I2S_SendData( SPI_x, (uint8_t) data );
-//       SPI_I2S_ClearFlag(SPI_x, SPI_I2S_FLAG_TXE);
-//
-//     // }
-//   }
-//
-//   else{
-//     gpio_led_state(LED5_RED_ID, 0);
-//   }
-//
-//   return;
-// }
 
+/*==============================================================================*/
+/*==============================================================================*/
+/* Function for sending data over SPI peripheral when device is asserted
+   - input argument: SPI peripheral to be used
+   - return value  : none */
 void SPIx_Send(SPI_TypeDef* SPI_x){
   uint16_t recv;
 
 
   if (!GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4 ))
   {
+
     i++;
     if(i==255){
       i=0;
     }
     // while(SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_BSY));
     gpio_led_state(LED5_RED_ID, 1);
-    // while (!SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_TXE )){
+    while (!SPI_I2S_GetFlagStatus(SPI_x, SPI_I2S_FLAG_TXE ));
     recv = SPI_I2S_ReceiveData(SPI_x);
       SPI_I2S_SendData( SPI_x, (uint8_t) i );
       SPI_I2S_ClearFlag(SPI_x, SPI_I2S_FLAG_TXE);
@@ -130,6 +119,13 @@ void SPIx_Send(SPI_TypeDef* SPI_x){
   return;
 }
 
+
+
+/*==============================================================================*/
+/*==============================================================================*/
+/* Function for reading data from SPI peripheral when device is asserted.
+   - input argument: SPI peripheral to be used
+   - return value  : received data */
 uint8_t SPIx_Read(SPI_TypeDef* SPI_x){
 
   uint16_t recv;
